@@ -1,7 +1,7 @@
 package models
 
 type Company struct {
-	Ticker      string `json:"ticker"`
-	Shares      int    `json:"shares"`
-	DomesticTax int    `json:"domestictax"`
+	Ticker      string `bson:"ticker"`
+	Shares      int    `bson:"shares"`
+	DomesticTax int    `bson:"domestictax"`
 }
