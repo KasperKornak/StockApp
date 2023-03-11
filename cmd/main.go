@@ -1,36 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
+	"net/http"
 
-	"github.com/piquette/finance-go/equity"
+	"github.com/KasperKornak/StockApp/pkg/config"
+	"github.com/KasperKornak/StockApp/pkg/middleware"
+	"github.com/KasperKornak/StockApp/pkg/routes"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	// A single quote.
-	// ---------------
-	q, err := equity.Get("AAPL")
-	if err != nil {
-		// Uh-oh!
-		panic(err)
-	}
-	// All good.
-	fmt.Println(q)
+	Client := config.MongoConnect()
+	defer Client.Disconnect(context.TODO())
 
-	// Multiple quotes.
-	// ----------------
-	symbols := []string{"AAPL", "GOOG", "MSFT"}
-	iter := equity.List(symbols)
-
-	// Iterate over results. Will exit upon any error.
-	for iter.Next() {
-		q := iter.Equity()
-		fmt.Println(q)
-	}
-
-	// Catch an error, if there was one.
-	if iter.Err() != nil {
-		// Uh-oh!
-		panic(err)
-	}
+	r := mux.NewRouter()
+	r.Use(middleware.MongoMiddleware(Client))
+	routes.RegisterStocks(r)
+	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":9010", r))
 }
