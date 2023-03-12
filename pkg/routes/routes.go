@@ -6,6 +6,9 @@ import (
 )
 
 var RegisterStocks = func(router *mux.Router) {
-	router.HandleFunc("/stocks/", controllers.GetStocks).Methods("GET")
-	router.HandleFunc("/stock/{ticker}/", controllers.GetStockByTicker).Methods("GET")
+	router.HandleFunc("/stocks", controllers.GetStocks).Methods("GET")
+	router.HandleFunc("/stock/{ticker}", controllers.GetStockByTicker).Methods("GET")
+	router.HandleFunc("/delete", controllers.DeletePosition).Methods("DELETE")
+	router.HandleFunc("/create", controllers.CreatePosition).Methods("POST")
+	router.HandleFunc("/update", controllers.UpdatePosition).Methods("PUT")
 }

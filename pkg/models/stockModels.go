@@ -15,7 +15,17 @@ type Company struct {
 	Domestictax int    `json:"domestictax"`
 }
 
-func GetStocks(Client *mongo.Client) []Company {
+type NewCompany struct {
+	Ticker      string `bson:"ticker"`
+	Shares      int    `bson:"shares"`
+	Domestictax int    `bson:"domestictax"`
+}
+
+type DeleteTicker struct {
+	DeleteSymbol string `json:"symbol"`
+}
+
+func ModelGetStocks(Client *mongo.Client) []Company {
 	stocks := Client.Database("stock").Collection("tickers")
 
 	filter := bson.M{"_id": bson.M{"$exists": true}, "shares": bson.M{"$exists": true}, "domestictax": bson.M{"$exists": true}}
@@ -43,7 +53,7 @@ func GetStocks(Client *mongo.Client) []Company {
 	return StockSlice
 }
 
-func GetStockByTicker(ticker string, Client *mongo.Client) Company {
+func ModelGetStockByTicker(ticker string, Client *mongo.Client) Company {
 	stocks := Client.Database("stock").Collection("tickers")
 	var Stock Company
 
@@ -55,4 +65,64 @@ func GetStockByTicker(ticker string, Client *mongo.Client) Company {
 	}
 
 	return Stock
+}
+
+func ModelDeletePosition(ticker string, Client *mongo.Client) error {
+	stocks := Client.Database("stock").Collection("tickers")
+	filter := bson.M{"ticker": ticker}
+	result, err := stocks.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return fmt.Errorf("error deleting document: %v", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("document not found")
+	}
+
+	return nil
+}
+
+func ModelCreatePosition(ticker string, shares int, domestictax int, Client *mongo.Client) error {
+	stocks := Client.Database("stock").Collection("tickers")
+	newPosition := &NewCompany{
+		Ticker:      ticker,
+		Shares:      shares,
+		Domestictax: domestictax,
+	}
+
+	_, err := stocks.InsertOne(context.TODO(), newPosition)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
+}
+
+func ModelUpdatePosition(ticker string, shares int, domestictax int, Client *mongo.Client) error {
+	stocks := Client.Database("stock").Collection("tickers")
+
+	currentStatus := ModelGetStockByTicker(ticker, Client)
+
+	var updateStock NewCompany
+	updateStock.Ticker = ticker
+	if shares != currentStatus.Shares {
+		updateStock.Shares = shares
+	} else {
+		updateStock.Shares = currentStatus.Shares
+	}
+	if domestictax != currentStatus.Domestictax {
+		updateStock.Domestictax = domestictax
+	} else {
+		updateStock.Domestictax = currentStatus.Domestictax
+	}
+
+	filter := bson.M{"ticker": ticker}
+	update := bson.M{"$set": updateStock}
+	_, err := stocks.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	return nil
 }
