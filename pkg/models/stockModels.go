@@ -10,16 +10,20 @@ import (
 )
 
 type Company struct {
-	Ticker      string `json:"ticker"`
-	Shares      int    `json:"shares"`
-	Domestictax int    `json:"domestictax"`
+	Ticker           string  `json:"ticker"`
+	Shares           int     `json:"shares"`
+	Domestictax      int     `json:"domestictax"`
+	Currency         string  `json:"currency"`
+	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
 }
 
-type NewCompany struct {
-	Ticker      string `bson:"ticker"`
-	Shares      int    `bson:"shares"`
-	Domestictax int    `bson:"domestictax"`
-}
+// type NewCompany struct {
+// 	Ticker           string  `bson:"ticker"`
+// 	Shares           int     `bson:"shares"`
+// 	Domestictax      int     `bson:"domestictax"`
+// 	Currency         string  `bson:"currency"`
+// 	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
+// }
 
 type DeleteTicker struct {
 	DeleteSymbol string `json:"symbol"`
@@ -28,7 +32,7 @@ type DeleteTicker struct {
 func ModelGetStocks(Client *mongo.Client) []Company {
 	stocks := Client.Database("stock").Collection("tickers")
 
-	filter := bson.M{"_id": bson.M{"$exists": true}, "shares": bson.M{"$exists": true}, "domestictax": bson.M{"$exists": true}}
+	filter := bson.M{"_id": bson.M{"$exists": true}, "shares": bson.M{"$exists": true}, "domestictax": bson.M{"$exists": true}, "currency": bson.M{"$exists": true}, "divquarterlyrate": bson.M{"$exists": true}}
 	cur, err := stocks.Find(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
@@ -82,12 +86,14 @@ func ModelDeletePosition(ticker string, Client *mongo.Client) error {
 	return nil
 }
 
-func ModelCreatePosition(ticker string, shares int, domestictax int, Client *mongo.Client) error {
+func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
-	newPosition := &NewCompany{
-		Ticker:      ticker,
-		Shares:      shares,
-		Domestictax: domestictax,
+	newPosition := &Company{
+		Ticker:           ticker,
+		Shares:           shares,
+		Domestictax:      domestictax,
+		Currency:         currency,
+		DivQuarterlyRate: divQuarterlyRate,
 	}
 
 	_, err := stocks.InsertOne(context.TODO(), newPosition)
@@ -98,22 +104,36 @@ func ModelCreatePosition(ticker string, shares int, domestictax int, Client *mon
 	return nil
 }
 
-func ModelUpdatePosition(ticker string, shares int, domestictax int, Client *mongo.Client) error {
+func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 
 	currentStatus := ModelGetStockByTicker(ticker, Client)
 
-	var updateStock NewCompany
+	var updateStock Company
 	updateStock.Ticker = ticker
+
 	if shares != currentStatus.Shares {
 		updateStock.Shares = shares
 	} else {
 		updateStock.Shares = currentStatus.Shares
 	}
+
 	if domestictax != currentStatus.Domestictax {
 		updateStock.Domestictax = domestictax
 	} else {
 		updateStock.Domestictax = currentStatus.Domestictax
+	}
+
+	if currency != currentStatus.Currency {
+		updateStock.Currency = currency
+	} else {
+		updateStock.Currency = currentStatus.Currency
+	}
+
+	if divQuarterlyRate != currentStatus.DivQuarterlyRate {
+		updateStock.DivQuarterlyRate = divQuarterlyRate
+	} else {
+		updateStock.DivQuarterlyRate = currentStatus.DivQuarterlyRate
 	}
 
 	filter := bson.M{"ticker": ticker}

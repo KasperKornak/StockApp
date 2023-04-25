@@ -1,0 +1,22 @@
+<table>
+    <thead>
+        <tr>
+            <th>Ticker</th>
+            <th>Shares</th>
+            <th>Domestic Tax</th>
+            <th>Currency</th>
+            <th>Quarterly Dividend Rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .}}
+        <tr>
+            <td>{{.Ticker}}</td>
+            <td>{{.Shares}}</td>
+            <td>{{.Domestictax}}</td>
+            <td>{{.Currency}}</td>
+            <td>{{.DivQuarterlyRate}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
