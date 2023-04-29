@@ -15,15 +15,10 @@ type Company struct {
 	Domestictax      int     `json:"domestictax"`
 	Currency         string  `json:"currency"`
 	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
+	DivYTD           float64 `json:"divytd" bson:"divytd"`
+	DivPLN           float64 `json:"divpln" bson:"divpln"`
+	NextPayment      string  `json:"nextpayment" bson:"nextpayment"`
 }
-
-// type NewCompany struct {
-// 	Ticker           string  `bson:"ticker"`
-// 	Shares           int     `bson:"shares"`
-// 	Domestictax      int     `bson:"domestictax"`
-// 	Currency         string  `bson:"currency"`
-// 	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
-// }
 
 type DeleteTicker struct {
 	DeleteSymbol string `json:"symbol"`
@@ -86,7 +81,7 @@ func ModelDeletePosition(ticker string, Client *mongo.Client) error {
 	return nil
 }
 
-func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, Client *mongo.Client) error {
+func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment string, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 	newPosition := &Company{
 		Ticker:           ticker,
@@ -94,6 +89,9 @@ func ModelCreatePosition(ticker string, shares int, domestictax int, currency st
 		Domestictax:      domestictax,
 		Currency:         currency,
 		DivQuarterlyRate: divQuarterlyRate,
+		DivYTD:           divytd,
+		DivPLN:           divpln,
+		NextPayment:      nextpayment,
 	}
 
 	_, err := stocks.InsertOne(context.TODO(), newPosition)
@@ -104,7 +102,7 @@ func ModelCreatePosition(ticker string, shares int, domestictax int, currency st
 	return nil
 }
 
-func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, Client *mongo.Client) error {
+func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment string, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 
 	currentStatus := ModelGetStockByTicker(ticker, Client)
@@ -134,6 +132,24 @@ func ModelUpdatePosition(ticker string, shares int, domestictax int, currency st
 		updateStock.DivQuarterlyRate = divQuarterlyRate
 	} else {
 		updateStock.DivQuarterlyRate = currentStatus.DivQuarterlyRate
+	}
+
+	if divytd != currentStatus.DivYTD {
+		updateStock.DivYTD = divytd
+	} else {
+		updateStock.DivYTD = currentStatus.DivYTD
+	}
+
+	if divpln != currentStatus.DivPLN {
+		updateStock.DivPLN = divpln
+	} else {
+		updateStock.DivPLN = currentStatus.DivPLN
+	}
+
+	if nextpayment != currentStatus.NextPayment {
+		updateStock.NextPayment = nextpayment
+	} else {
+		updateStock.NextPayment = currentStatus.NextPayment
 	}
 
 	filter := bson.M{"ticker": ticker}

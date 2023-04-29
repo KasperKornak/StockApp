@@ -8,6 +8,11 @@ require (
 )
 
 require (
+	github.com/piquette/finance-go v1.0.0 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
+)
+
+require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/joho/godotenv v1.5.1 // direct
 	github.com/klauspost/compress v1.13.6 // indirect
