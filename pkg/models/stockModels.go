@@ -17,7 +17,8 @@ type Company struct {
 	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
 	DivYTD           float64 `json:"divytd" bson:"divytd"`
 	DivPLN           float64 `json:"divpln" bson:"divpln"`
-	NextPayment      string  `json:"nextpayment" bson:"nextpayment"`
+	NextPayment      int     `json:"nextpayment" bson:"nextpayment"`
+	PrevPayment      int     `json:"prevpayment" bson:"prevpayment"`
 }
 
 type DeleteTicker struct {
@@ -81,7 +82,7 @@ func ModelDeletePosition(ticker string, Client *mongo.Client) error {
 	return nil
 }
 
-func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment string, Client *mongo.Client) error {
+func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 	newPosition := &Company{
 		Ticker:           ticker,
@@ -92,6 +93,7 @@ func ModelCreatePosition(ticker string, shares int, domestictax int, currency st
 		DivYTD:           divytd,
 		DivPLN:           divpln,
 		NextPayment:      nextpayment,
+		PrevPayment:      prevpayment,
 	}
 
 	_, err := stocks.InsertOne(context.TODO(), newPosition)
@@ -102,7 +104,7 @@ func ModelCreatePosition(ticker string, shares int, domestictax int, currency st
 	return nil
 }
 
-func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment string, Client *mongo.Client) error {
+func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 
 	currentStatus := ModelGetStockByTicker(ticker, Client)
@@ -150,6 +152,12 @@ func ModelUpdatePosition(ticker string, shares int, domestictax int, currency st
 		updateStock.NextPayment = nextpayment
 	} else {
 		updateStock.NextPayment = currentStatus.NextPayment
+	}
+
+	if prevpayment != currentStatus.PrevPayment {
+		updateStock.PrevPayment = prevpayment
+	} else {
+		updateStock.PrevPayment = currentStatus.PrevPayment
 	}
 
 	filter := bson.M{"ticker": ticker}

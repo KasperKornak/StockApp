@@ -17,5 +17,5 @@ terminal:
 ```bash
 cd cmd
 go run main.go
-curl -H "Content-Type: application/json" --request POST -d '{"ticker": "MSFT", "shares": 2, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.68, "divytd": 14.2, "divpln": 67.32, "nextpayment": "2023-06-01"}' http://localhost:9010/create
+curl -X POST -H "Content-Type: application/json" -d '{"ticker": "PG", "shares": 6, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.9407, "divytd": 0.0, "divpln": 0.0, "nextpayment": 1684101600, "prevpayment":1676415600}' http://localhost:9010/create
 ```

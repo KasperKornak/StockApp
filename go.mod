@@ -8,7 +8,12 @@ require (
 )
 
 require (
+	github.com/felixge/httpsnoop v1.0.1 // indirect
+	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/piquette/finance-go v1.0.0 // indirect
+	github.com/pjaskulski/nbpapi v0.3.7 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/rs/cors v1.9.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 )
 

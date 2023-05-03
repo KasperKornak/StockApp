@@ -55,9 +55,9 @@ func CreatePosition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ticker, shares, domestictax := body.Ticker, body.Shares, body.Domestictax
-	currency, divQuarterlyRate := body.Currency, body.DivQuarterlyRate
+	currency, divQuarterlyRate, prevpayment := body.Currency, body.DivQuarterlyRate, body.PrevPayment
 	divytd, divpln, nextpayment := body.DivYTD, body.DivPLN, body.NextPayment
-	_ = models.ModelCreatePosition(ticker, shares, domestictax, currency, divQuarterlyRate, divytd, divpln, nextpayment, Client)
+	_ = models.ModelCreatePosition(ticker, shares, domestictax, currency, divQuarterlyRate, divytd, divpln, nextpayment, prevpayment, Client)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(body)
 }
@@ -71,9 +71,9 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ticker, shares, domestictax := body.Ticker, body.Shares, body.Domestictax
-	currency, divQuarterlyRate := body.Currency, body.DivQuarterlyRate
+	currency, divQuarterlyRate, prevpayment := body.Currency, body.DivQuarterlyRate, body.PrevPayment
 	divytd, divpln, nextpayment := body.DivYTD, body.DivPLN, body.NextPayment
-	_ = models.ModelUpdatePosition(ticker, shares, domestictax, currency, divQuarterlyRate, divytd, divpln, nextpayment, Client)
+	_ = models.ModelUpdatePosition(ticker, shares, domestictax, currency, divQuarterlyRate, divytd, divpln, nextpayment, prevpayment, Client)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(body)
 }
