@@ -1,13 +1,16 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/KasperKornak/StockApp/pkg/models"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,6 +44,12 @@ func DeletePosition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ticker := body.DeleteSymbol
+
+	tempBody := models.ModelGetStockByTicker(ticker, Client)
+
+	divRec, divTax := tempBody.DivYTD, tempBody.DivPLN
+	_ = models.TransferDivs(divRec, divTax, Client)
+
 	_ = models.ModelDeletePosition(ticker, Client)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(body.DeleteSymbol))
@@ -60,6 +69,7 @@ func CreatePosition(w http.ResponseWriter, r *http.Request) {
 	_ = models.ModelCreatePosition(ticker, shares, domestictax, currency, divQuarterlyRate, divytd, divpln, nextpayment, prevpayment, Client)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(body)
+	UpdateSummary()
 }
 
 func UpdatePosition(w http.ResponseWriter, r *http.Request) {
@@ -95,10 +105,31 @@ func StocksHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var deletedCompanies models.DeletedCompany
+	collection := Client.Database("stock").Collection("tickers")
+	err = collection.FindOne(context.TODO(), bson.M{"ticker": "DELETED_SUM", "year": time.Now().Year()}).Decode(&deletedCompanies)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newCompany := models.Company{
+		Ticker:           deletedCompanies.Ticker,
+		Shares:           0,
+		Domestictax:      0,
+		Currency:         "",
+		DivQuarterlyRate: 0,
+		DivYTD:           deletedCompanies.DivYTD,
+		DivPLN:           deletedCompanies.DivPLN,
+		NextPayment:      0,
+		PrevPayment:      0,
+	}
+
 	tmpl, err := template.ParseFiles("../pkg/template/table.tmpl")
 	if err != nil {
 		http.Error(w, "Error rendering HTML template", http.StatusInternalServerError)
 		return
 	}
+	data = append(data, newCompany)
 	tmpl.Execute(w, data)
+
 }

@@ -78,10 +78,51 @@ func CheckPayment() {
 			if err != nil {
 				panic(err)
 			}
+
+			updateNextDate := bson.M{"$set": bson.M{"nextpayment:": (company.PrevPayment)}}
+			_, err = stocks.UpdateOne(context.TODO(), filter, updateNextDate)
+			if err != nil {
+				panic(err)
+			}
+
 			fmt.Printf("updated: %s", company.Ticker)
 		}
 	}
 	err := Client.Disconnect(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+}
+
+func UpdateSummary() {
+	var updatedDoc models.DeletedCompany
+	updatedDoc.Year = time.Now().Year()
+	updatedDoc.Ticker = "YEAR_SUMMARY"
+	updatedDoc.DivYTD = 0.0
+	updatedDoc.DivPLN = 0.0
+
+	Client := config.MongoConnect()
+	tickers := Client.Database("stock").Collection("tickers")
+	stockSlice := models.ModelGetStocks(Client)
+	divTax := 0.0
+	divRec := 0.0
+
+	for _, stock := range stockSlice {
+		divTax = divTax + stock.DivPLN
+		divRec = divRec + stock.DivYTD
+	}
+
+	deletedStocks := models.ModelGetStockByTicker("DELETED_SUM", Client)
+
+	divTax = divTax + deletedStocks.DivPLN
+	divRec = divRec + deletedStocks.DivYTD
+
+	updatedDoc.DivPLN = divTax
+	updatedDoc.DivYTD = divRec
+
+	filter := bson.M{"ticker": "YEAR_SUMMARY"}
+	update := bson.M{"$set": updatedDoc}
+	_, err := tickers.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		panic(err)
 	}

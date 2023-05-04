@@ -8,12 +8,6 @@
 |`localhost:9010/create` | **POST** |`curl -X POST -H "Content-Type: application/json" -d '{"ticker": "PG", "shares": 6, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.9407, "divytd": 0.0, "divpln": 0.0, "nextpayment": 1684101600, "prevpayment":1676415600}' http://localhost:9010/create` | Creates new position|
 |`localhost:9010/update` | **PUT** |`curl -X POST -H "Content-Type: application/json" -d '{"ticker": "PG", "shares": 6, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.9407, "divytd": 0.0, "divpln": 0.0, "nextpayment": 1684101600, "prevpayment":1676415600}' http://localhost:9010/create` | Update exisiting position|
 
-## TODO list
-- [ ] add better error handling,
-- [ ] run more tests,
-- [x] configure years collection to work with `/create` path,
-- [x] add ".L" stock support to getting one company **works with requests**,
-- [x] add simple HTML table view,
 
 ## Links
 [Folder layout](https://www.youtube.com/watch?v=Y7kuW1qyDng)

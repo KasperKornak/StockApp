@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,6 +24,13 @@ type Company struct {
 
 type DeleteTicker struct {
 	DeleteSymbol string `json:"symbol"`
+}
+
+type DeletedCompany struct {
+	Year   int     `json:"year" bson:"year"`
+	Ticker string  `json:"ticker" bson:"ticker"`
+	DivYTD float64 `json:"divytd" bson:"divytd"`
+	DivPLN float64 `json:"divpln" bson:"divpln"`
 }
 
 func ModelGetStocks(Client *mongo.Client) []Company {
@@ -163,6 +171,33 @@ func ModelUpdatePosition(ticker string, shares int, domestictax int, currency st
 	filter := bson.M{"ticker": ticker}
 	update := bson.M{"$set": updateStock}
 	_, err := stocks.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	return nil
+}
+
+func TransferDivs(divRec float64, divTax float64, Client *mongo.Client) error {
+	stocks := Client.Database("stock").Collection("tickers")
+	var deletedStocks DeletedCompany
+	var updateDeletedStocks DeletedCompany
+	filter := bson.M{"ticker": "DELETED_SUM", "year": time.Now().Year()}
+	err := stocks.FindOne(context.TODO(), filter).Decode(&deletedStocks)
+
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	updateDeletedStocks.Ticker = "DELETED_SUM"
+	updateDeletedStocks.Year = deletedStocks.Year
+	updateDeletedStocks.DivYTD = deletedStocks.DivYTD + divRec
+	updateDeletedStocks.DivPLN = deletedStocks.DivPLN + divTax
+
+	update := bson.M{"$set": updateDeletedStocks}
+	_, err = stocks.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		log.Fatal(err)
 		return err

@@ -1,3 +1,29 @@
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    #total-row {
+        font-weight: bold;
+    }
+</style>
+
 <table>
     <thead>
         <tr>
@@ -9,6 +35,7 @@
             <th>Dividend YTD</th>
             <th>Dividend PLN</th>
             <th>Next Payment Date</th>
+            <th>Previous Payment Date</th>
         </tr>
     </thead>
     <tbody>
@@ -22,7 +49,27 @@
             <td>{{.DivYTD}}</td>
             <td>{{.DivPLN}}</td>
             <td>{{.NextPayment}}</td>
+            <td>{{.PrevPayment}}</td>
         </tr>
         {{end}}
+        <tr id="total-row">
+            <td colspan="6"></td>
+            <td id="sum-divpln"></td>
+            <td colspan="2"></td>
+        </tr>
     </tbody>
 </table>
+
+
+<script>
+    // Get all the Dividend PLN values from each row
+    const divplnValues = Array.from(document.querySelectorAll("tbody td:nth-child(7)"))
+        .map(td => parseFloat(td.textContent) || 0);
+
+    // Calculate the total sum of Dividend PLN values
+    const sumDivPLN = divplnValues.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+    // Display the sum in the "total-row"
+    const sumDivPLNCell = document.querySelector("#sum-divpln");
+    sumDivPLNCell.textContent = sumDivPLN.toFixed(2);
+</script>
