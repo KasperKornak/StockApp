@@ -57,6 +57,7 @@ func init() {
 		}
 	}
 
+	// update summary document
 	controllers.UpdateSummary()
 
 }
@@ -73,10 +74,11 @@ func main() {
 
 	http.Handle("/", r)
 
-	// check for new dividend payment dates and
+	// check for new dividend payment dates and update summary document
 	c := cron.New()
-	c.AddFunc("53 22 * * *", func() {
+	c.AddFunc("00 1 * * *", func() {
 		fmt.Println("Starting sync..")
+		controllers.CheckYear()
 		controllers.GetPaymentDate()
 		controllers.CheckPayment()
 		controllers.UpdateSummary()
@@ -85,5 +87,6 @@ func main() {
 
 	c.Start()
 
+	// serve on :9010
 	log.Fatal(http.ListenAndServe(":9010", r))
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/piquette/finance-go/forex"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetPaymentDate() {
@@ -40,6 +41,7 @@ func GetPaymentDate() {
 				if err != nil {
 					panic(err)
 				}
+				fmt.Printf("Updated dividend for: %s", company.Ticker)
 			}
 		}
 	}
@@ -63,8 +65,19 @@ func CheckPayment() {
 			noShares := company.Shares
 			div := company.DivQuarterlyRate
 			divPLNtoSend := div * float64(noShares) * q.Bid * float64(company.Domestictax) / 100.0
-			divUSDtoSend := div * float64(noShares)
 
+			var divUSDtoSend float64
+			if company.Currency != "USD" {
+				pairCorr := fmt.Sprintf("%sUSD=x", company.Currency)
+				correction, err := forex.Get(pairCorr)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				divUSDtoSend = div * float64(noShares) * correction.Bid
+			} else {
+				divUSDtoSend = div * float64(noShares)
+			}
 			filter := bson.M{"ticker": company.Ticker}
 			stocks := Client.Database("stock").Collection("tickers")
 			update := bson.M{"$set": bson.M{"divytd": (company.DivYTD + divUSDtoSend)}}
@@ -85,7 +98,9 @@ func CheckPayment() {
 				panic(err)
 			}
 
-			fmt.Printf("updated: %s", company.Ticker)
+			fmt.Printf("Recieved dividend from: %s\n", company.Ticker)
+			fmt.Printf("Amount in USD: %f\n", divUSDtoSend)
+			fmt.Printf("Tax to pay in PLN: %f\n", divPLNtoSend)
 		}
 	}
 	err := Client.Disconnect(context.TODO())
@@ -126,4 +141,52 @@ func UpdateSummary() {
 	if err != nil {
 		panic(err)
 	}
+	err = Client.Disconnect(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+}
+
+func CheckYear() {
+	Client := config.MongoConnect()
+	tickers := Client.Database("stock").Collection("tickers")
+	defer Client.Disconnect(context.TODO())
+	err := tickers.FindOne(context.TODO(), bson.M{"ticker": "DELETED_SUM", "year": time.Now().Year()}).Err()
+
+	if err == mongo.ErrNoDocuments {
+		var deleted models.DeletedCompany
+		deleted.Year = time.Now().Year()
+		deleted.Ticker = "DELETED_SUM"
+		deleted.DivYTD = 0.0
+		deleted.DivPLN = 0.0
+
+		_, err := tickers.InsertOne(context.TODO(), &deleted)
+		if err != nil {
+			panic(err)
+		}
+
+		var newDocument models.DeletedCompany
+		newDocument.Year = time.Now().Year()
+		newDocument.Ticker = "YEAR_SUMMARY"
+		newDocument.DivYTD = 0.0
+		newDocument.DivPLN = 0.0
+
+		_, err = tickers.InsertOne(context.TODO(), &newDocument)
+		if err != nil {
+			panic(err)
+		}
+
+		stockSlice := models.ModelGetStocks(Client)
+		for _, stock := range stockSlice {
+			stock.DivPLN = 0.0
+			stock.DivYTD = 0.0
+			filter := bson.M{"ticker": stock.Ticker}
+			update := bson.M{"$set": stock}
+			_, err := tickers.UpdateOne(context.TODO(), filter, update)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+	fmt.Println("Happy New Year!")
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// handle various routes of the app
 var RegisterStocks = func(router *mux.Router) {
 	router.HandleFunc("/stocks", controllers.GetStocks).Methods("GET")
 	router.HandleFunc("/stock/{ticker}", controllers.GetStockByTicker).Methods("GET")

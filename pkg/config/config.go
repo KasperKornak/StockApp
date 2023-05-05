@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// connect to MongoDB, retrieve credentials from .env file in cmd directory
+// return mongo Client
 func MongoConnect() *mongo.Client {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")

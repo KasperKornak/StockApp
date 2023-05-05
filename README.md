@@ -8,6 +8,13 @@
 |`localhost:9010/create` | **POST** |`curl -X POST -H "Content-Type: application/json" -d '{"ticker": "PG", "shares": 6, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.9407, "divytd": 0.0, "divpln": 0.0, "nextpayment": 1684101600, "prevpayment":1676415600}' http://localhost:9010/create` | Creates new position|
 |`localhost:9010/update` | **PUT** |`curl -X POST -H "Content-Type: application/json" -d '{"ticker": "PG", "shares": 6, "domestictax": 4, "currency": "USD", "divquarterlyrate": 0.9407, "divytd": 0.0, "divpln": 0.0, "nextpayment": 1684101600, "prevpayment":1676415600}' http://localhost:9010/create` | Update exisiting position|
 
+## Functions used
+| Function | Package | Description |
+|   ---    |    ---    |    ---      |
+| `init()` | **main** | Checks if deleted stocks and summary documents exists, if not creates them. Updates summary document at the start of the StockApp.  |
+| `main()` | **main** | Responsible for running app on port 9010 and cron job which synchronizes dividend data. |
+|  `MongoConnect()` | **config** | Retrieves credentials, connects to MongoDB. Returns client of type `*mongo.Client`. |
+
 
 ## Links
 [Folder layout](https://www.youtube.com/watch?v=Y7kuW1qyDng)
