@@ -183,7 +183,7 @@ func TransferDivs(divRec float64, divTax float64, Client *mongo.Client) error {
 	stocks := Client.Database("stock").Collection("tickers")
 	var deletedStocks DeletedCompany
 	var updateDeletedStocks DeletedCompany
-	filter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
+	filter := bson.M{"ticker": "DELETED_SUM", "year": time.Now().Year()}
 	err := stocks.FindOne(context.TODO(), filter).Decode(&deletedStocks)
 
 	if err != nil {
