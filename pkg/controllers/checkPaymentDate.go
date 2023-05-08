@@ -187,6 +187,6 @@ func CheckYear() {
 				panic(err)
 			}
 		}
+		fmt.Println("Happy New Year!")
 	}
-	fmt.Println("Happy New Year!")
 }
