@@ -58,7 +58,12 @@ func init() {
 	}
 
 	// update summary document
+	fmt.Println("Starting sync..")
+	controllers.CheckYear()
+	controllers.GetPaymentDate()
+	controllers.CheckPayment()
 	controllers.UpdateSummary()
+	fmt.Println("Sync done 🦖")
 
 }
 
@@ -76,7 +81,7 @@ func main() {
 
 	// check for new dividend payment dates and update summary document
 	c := cron.New()
-	c.AddFunc("00 1 * * *", func() {
+	c.AddFunc("18 0 * * *", func() {
 		fmt.Println("Starting sync..")
 		controllers.CheckYear()
 		controllers.GetPaymentDate()

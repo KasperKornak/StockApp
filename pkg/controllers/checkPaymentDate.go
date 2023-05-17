@@ -28,16 +28,17 @@ func GetPaymentDate() {
 		q := iter.Equity()
 		yahooDate := q.DividendDate
 		for _, company := range stockSlice {
-			if (q.Symbol == company.Ticker) && (q.DividendDate >= company.NextPayment) {
+			if (q.Symbol == company.Ticker) && (q.DividendDate > company.NextPayment) {
+				next := company.NextPayment
 				filter := bson.M{"ticker": company.Ticker}
 				stocks := Client.Database("stock").Collection("tickers")
-				update := bson.M{"$set": bson.M{"nextpayment": yahooDate}}
-				_, err := stocks.UpdateOne(context.TODO(), filter, update)
-				if err != nil {
-					panic(err)
+				update := bson.M{
+					"$set": bson.M{
+						"nextpayment": yahooDate,
+						"prevpayment": next,
+					},
 				}
-				updatePay := bson.M{"$set": bson.M{"prevpayment": company.NextPayment}}
-				_, err = stocks.UpdateOne(context.TODO(), filter, updatePay)
+				_, err := stocks.UpdateOne(context.TODO(), filter, update)
 				if err != nil {
 					panic(err)
 				}
