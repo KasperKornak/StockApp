@@ -81,7 +81,7 @@ func main() {
 
 	// check for new dividend payment dates and update summary document
 	c := cron.New()
-	c.AddFunc("18 0 * * *", func() {
+	c.AddFunc("05 23 * * *", func() {
 		fmt.Println("Starting sync..")
 		controllers.CheckYear()
 		controllers.GetPaymentDate()

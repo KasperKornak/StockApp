@@ -93,7 +93,7 @@ func CheckPayment() {
 				panic(err)
 			}
 
-			updateNextDate := bson.M{"$set": bson.M{"nextpayment:": (company.PrevPayment)}}
+			updateNextDate := bson.M{"$set": bson.M{"nextpayment": (company.PrevPayment)}}
 			_, err = stocks.UpdateOne(context.TODO(), filter, updateNextDate)
 			if err != nil {
 				panic(err)
