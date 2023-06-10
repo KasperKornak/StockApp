@@ -10,7 +10,6 @@ import (
 	"github.com/KasperKornak/StockApp/pkg/config"
 	"github.com/KasperKornak/StockApp/pkg/controllers"
 	"github.com/KasperKornak/StockApp/pkg/middleware"
-	"github.com/KasperKornak/StockApp/pkg/models"
 	"github.com/KasperKornak/StockApp/pkg/routes"
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron/v3"
@@ -28,7 +27,7 @@ func init() {
 	filter := bson.M{"year": time.Now().Year(), "ticker": "DELETED_SUM"}
 	err := tickers.FindOne(context.TODO(), filter).Err()
 	if err == mongo.ErrNoDocuments {
-		var newDocument models.DeletedCompany
+		var newDocument controllers.DeletedCompany
 		newDocument.Year = time.Now().Year()
 		newDocument.Ticker = "DELETED_SUM"
 		newDocument.DivYTD = 0.0
@@ -45,7 +44,7 @@ func init() {
 	filter = bson.M{"year": time.Now().Year(), "ticker": "YEAR_SUMMARY"}
 	err = tickers.FindOne(context.TODO(), filter).Err()
 	if err == mongo.ErrNoDocuments {
-		var newDocument models.DeletedCompany
+		var newDocument controllers.DeletedCompany
 		newDocument.Year = time.Now().Year()
 		newDocument.Ticker = "YEAR_SUMMARY"
 		newDocument.DivYTD = 0.0
