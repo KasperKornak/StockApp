@@ -25,12 +25,15 @@
 |`UpdatePosition(w http.ResponseWriter, r *http.Request)`|**controllers**| Used for handling requests made to */update* endpoint.|
 |`StocksHTML(w http.ResponseWriter, r *http.Request)`|**controllers**| Used to render dividend table on */home*.|
 |`MongoMiddleware(client *mongo.Client)`|**middleware**|Used to share Mongo client between multiple functions.|
-|`func ModelGetStocks(Client *mongo.Client)`|**models**|Extension of *GetStocks* - extracts all stocks from MongoDB in form of type *Company* slice.|
-|`func ModelGetStockByTicker(ticker string, Client *mongo.Client)`|**models**|Extension of *GetStockByTicker* - extract single company from MongoDB, returns *Company* struct.|
-|`func ModelDeletePosition(ticker string, Client *mongo.Client)`|**models**|Extension of *DeletePosition* sends query to MongoDB to delete company record.|
-|`func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client)`|**models**|Extension of *CreatePosition* sends position data to MongoDB.|
-|`func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client)`|**models**|Extension of *UpdatePosition*, updates position in MongoDB.|
-|`TransferDivs(divRec float64, divTax float64, Client *mongo.Client)`|**models**|Component of *DeletePosition* - transfers tax and dividend data to *DELETED_SUM* document.|
+|`func ModelGetStocks(Client *mongo.Client)`|**controllers**|Extension of *GetStocks* - extracts all stocks from MongoDB in form of type *Company* slice.|
+|`func ModelGetStockByTicker(ticker string, Client *mongo.Client)`|**controllers**|Extension of *GetStockByTicker* - extract single company from MongoDB, returns *Company* struct.|
+|`func ModelDeletePosition(ticker string, Client *mongo.Client)`|**controllers**|Extension of *DeletePosition* sends query to MongoDB to delete company record.|
+|`func ModelCreatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client)`|**controllers**|Extension of *CreatePosition* sends position data to MongoDB.|
+|`func ModelUpdatePosition(ticker string, shares int, domestictax int, currency string, divQuarterlyRate float64, divytd float64, divpln float64, nextpayment int, prevpayment int, Client *mongo.Client)`|**controllers**|Extension of *UpdatePosition*, updates position in MongoDB.|
+|`TransferDivs(divRec float64, divTax float64, Client *mongo.Client)`|**controllers**|Component of *DeletePosition* - transfers tax and dividend data to *DELETED_SUM* document.|
+|`GetMongoTickers()`| **controllers**| Simple func for getting slice of ticker strings. Used for sending requests to polygon.|
+|`SendAPIGet(tickerToCheck string)`|**controllers**| Used for getting payment date - sends request to polygon, then extracts payment date from response JSON and converts it into int.|
+|`GetForex(pair string)`| **controllers**|Used for getting forex rate between USD and PLN. However, can handle other currency pairs.|
 
 
 ## Links
