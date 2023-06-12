@@ -51,10 +51,11 @@ jobs:
     - name: Create .env file
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "echo ${{ secrets.BACKEND_VARS }} > main/cmd/.env"
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          script: "echo $BACKEND_VARS > main/cmd/.env"
+          envs: BACKEND_VARS
     
     - name: Run app on EC2
       uses: appleboy/ssh-action@master
