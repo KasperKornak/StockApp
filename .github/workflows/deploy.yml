@@ -19,13 +19,14 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2 
 
+
     - name: Get dependencies
       run: go get -v -t -d ./...
 
     - name: Build
       run: |
         cd cmd
-        go build -v -o app
+        go build -v -o StockAppBinary
         cd ..
 
     - name: Copy binary to EC2
@@ -34,8 +35,8 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "cmd/app"
-        target: "/home/ubuntu/StockApp/cmd/app"
+        source: "cmd/StockAppBinary"
+        target: "/home/ubuntu/StockApp/cmd/StockAppBinary"
 
     - name: Copy template file to EC2
       uses: appleboy/scp-action@master
@@ -60,4 +61,4 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "sudo chmod +x /home/ubuntu/StockApp/cmd/app && sudo chmod 777 /home/ubuntu/StockApp/cmd/app && sudo nohup /home/ubuntu/StockApp/cmd/app > app.log 2>&1 &"
+        script: "sudo chmod +x /home/ubuntu/StockApp/cmd/StockAppBinary && sudo chmod 777 /home/ubuntu/StockApp/cmd/StockAppBinary && sudo nohup /home/ubuntu/StockApp/cmd/StockAppBinary > app.log 2>&1 &"
