@@ -21,9 +21,7 @@ jobs:
 
 
     - name: Get dependencies
-      run: |
-        echo ${{ secrets.BACKEND_VARS }} > cmd/.env
-        go get -v -t -d ./...
+      run: go get -v -t -d ./...
 
     - name: Build
       run: |
@@ -37,12 +35,29 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         source: "cmd/StockApp"
-        target: "/home/ubuntu/StockApp"
+        target: "/home/ubuntu/StockApp/cmd/StockApp"
 
+    - name: Copy template file to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+        source: "pkg/templates/table.tmpl"
+        target: "/home/ubuntu/StockApp/pkg/templates/table.tmpl"
+
+    - name: Create .env file on EC2
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          script: "echo ${{ secrets.BACKEND_VARS }} >> /home/ubuntu/StockApp/cmd/.env"
+    
     - name: Run app on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "chmod +x /home/ubuntu/StockApp && nohup /home/ubuntu/StockApp > app.log 2>&1 &"
+        script: "sudo chmod +x /home/ubuntu/StockApp/cmd/StockApp && sudo nohup /home/ubuntu/StockApp/cmd/StockApp > app.log 2>&1 &"
