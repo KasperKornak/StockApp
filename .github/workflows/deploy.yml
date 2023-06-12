@@ -58,7 +58,7 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
           script: |
-            echo "${BACKEND_VARS}" > /home/ubuntu/StockApp/cmd/.env
+            echo "${BACKEND_VARS}" > main/cmd/.env
           envs: BACKEND_VARS
     
     - name: Run app on EC2
