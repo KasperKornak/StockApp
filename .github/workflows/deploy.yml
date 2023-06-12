@@ -49,7 +49,7 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         source: "pkg/template/table.tmpl"
-        target: "main/pkg/template"
+        target: "main/"
 
     - name: Create .env file
       uses: appleboy/ssh-action@master
