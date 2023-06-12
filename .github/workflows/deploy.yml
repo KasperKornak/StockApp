@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: |
         cd cmd
-        go build -v -o StockAppBinary
+        go build main.go
         cd ..
 
     - name: Copy binary to EC2
@@ -35,8 +35,8 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "cmd/StockAppBinary"
-        target: "StockApp/cmd/StockAppBinary"
+        source: "cmd/main"
+        target: "StockApp/cmd/main"
 
     - name: Copy template file to EC2
       uses: appleboy/scp-action@master
@@ -61,4 +61,4 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "sudo chmod +x StockApp/cmd/StockAppBinary && sudo chmod 777 StockApp/cmd/StockAppBinary && sudo nohup StockApp/cmd/StockAppBinary > app.log 2>&1 &"
+        script: "sudo chmod +x StockApp/cmd/main && sudo chmod 777 StockApp/cmd/main && sudo nohup StockApp/cmd/main > app.log 2>&1 &"
