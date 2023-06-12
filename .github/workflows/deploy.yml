@@ -68,4 +68,5 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "sudo chmod +x main/cmd/main && sudo chmod 777 main/cmd/main && nohup main/cmd/main > app.log 2>&1 &"
+        script: |
+            sudo chmod +x main/cmd/main && sudo chmod 777 main/cmd/main && cd main/cmd && nohup ./main > app.log 2>&1 &
