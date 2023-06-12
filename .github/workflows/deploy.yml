@@ -35,7 +35,7 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         source: "cmd/StockApp"
-        target: "/home/ubuntu/StockApp/cmd/StockApp"
+        target: "/home/ubuntu/StockApp/cmd"
 
     - name: Copy template file to EC2
       uses: appleboy/scp-action@master
