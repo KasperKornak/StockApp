@@ -1,5 +1,8 @@
 name: Deploy
 
+env:
+    BACKEND_VARS: ${{ secrets.BACKEND_VARS }}
+
 on:
   push:
     branches:
@@ -54,8 +57,9 @@ jobs:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-          script: "echo $BACKEND_VARS > main/cmd/.env"
-          envs: ${{ secrets.BACKEND_VARS }}
+          script: |
+            echo "${BACKEND_VARS}" > /home/ubuntu/StockApp/cmd/.env
+          envs: BACKEND_VARS
     
     - name: Run app on EC2
       uses: appleboy/ssh-action@master
