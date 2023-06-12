@@ -53,7 +53,7 @@ jobs:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-          script: "echo ${{ secrets.BACKEND_VARS }} >> main/cmd/.env"
+          script: "echo ${{ secrets.BACKEND_VARS }} > main/cmd/.env"
     
     - name: Run app on EC2
       uses: appleboy/ssh-action@master
