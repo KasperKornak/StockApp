@@ -44,7 +44,7 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         source: "pkg/templates/table.tmpl"
-        target: "/home/ubuntu/StockApp/pkg/templates/table.tmpl"
+        target: "/home/ubuntu/StockApp/pkg/templates/"
 
     - name: Create .env file on EC2
       uses: appleboy/ssh-action@master
