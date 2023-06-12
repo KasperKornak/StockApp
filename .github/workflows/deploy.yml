@@ -59,6 +59,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
           script: |
             echo "${BACKEND_VARS}" > main/cmd/.env
+            chmod 777 main/cmd/.env
           envs: BACKEND_VARS
     
     - name: Run app on EC2
