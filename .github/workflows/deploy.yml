@@ -22,7 +22,6 @@ jobs:
 
     - name: Get dependencies
       run: |
-        echo ${{ secrets.BACKEND_VARS }} > main/cmd/.env
         go get -v -t -d ./...
 
     - name: Build
@@ -49,6 +48,14 @@ jobs:
         source: "pkg/template/table.tmpl"
         target: "main/pkg/template/table.tmpl"
 
+    - name: Create .env file
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+        script: "echo ${{ secrets.BACKEND_VARS }} > main/cmd/.env"
+    
     - name: Run app on EC2
       uses: appleboy/ssh-action@master
       with:
