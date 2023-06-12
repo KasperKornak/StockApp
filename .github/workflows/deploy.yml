@@ -60,12 +60,6 @@ jobs:
           script: |
             echo "${BACKEND_VARS}" > main/cmd/.env
             chmod 777 main/cmd/.env
+            sudo chmod +x main/cmd/main && sudo chmod 777 main/cmd/main
+            sudo nohup main/cmd/main > app.log 2>&1 &"
           envs: BACKEND_VARS
-    
-    - name: Run app on EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: "sudo chmod +x main/cmd/main && sudo chmod 777 main/cmd/main && sudo nohup main/cmd/main > app.log 2>&1 &"
