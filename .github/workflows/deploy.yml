@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.18
+      id: go
+
+    - name: Check out code
+      uses: actions/checkout@v2 
+
+
+    - name: Get dependencies
+      run: |
+        echo ${{ secrets.BACKEND_VARS }} > cmd/.env
+        go get -v -t -d ./...
+
+    - name: Build
+      run: go build -v -o StockApp
+
+    - name: Copy binary to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+        source: "StockApp"
+        target: "/home/ubuntu/StockApp"
+
+    - name: Run app on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+        script: "chmod +x /home/ubuntu/StockApp && nohup /home/ubuntu/StockApp > app.log 2>&1 &"
