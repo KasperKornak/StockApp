@@ -36,7 +36,7 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "StockApp"
+        source: "cmd/StockApp"
         target: "/home/ubuntu/StockApp"
 
     - name: Run app on EC2
