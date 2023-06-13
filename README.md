@@ -1,3 +1,4 @@
+[![Deploy](https://github.com/KasperKornak/StockApp/actions/workflows/deploy.yml/badge.svg)](https://github.com/KasperKornak/StockApp/actions/workflows/deploy.yml)
 # StockApp
 ## Used paths
 | URL | Method | JSON | Description |
