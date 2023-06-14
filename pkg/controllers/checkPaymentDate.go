@@ -133,6 +133,7 @@ func CheckPayment() {
 			fmt.Printf("Recieved dividend from: %s\n", company.Ticker)
 			fmt.Printf("Amount in USD: %f\n", divUSDtoSend)
 			fmt.Printf("Tax to pay in PLN: %f\n", divPLNtoSend)
+			SlackRequest(company.Ticker, divUSDtoSend, divPLNtoSend)
 		}
 		apiNum += 1
 		if apiNum%5 == 0 {
