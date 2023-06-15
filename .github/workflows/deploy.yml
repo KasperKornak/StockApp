@@ -80,7 +80,7 @@ jobs:
           script: |
             echo "${BACKEND_VARS}" > main/pkg/slackUtils/.env
             chmod 711 main/pkg/slackUtils/.env
-            envs: BACKEND_VARS
+          envs: BACKEND_VARS
             
     - name: Copy requirements.txt file to EC2
       uses: appleboy/scp-action@master
