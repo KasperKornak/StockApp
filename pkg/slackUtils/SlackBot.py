@@ -17,8 +17,8 @@ def post_data():
     divUSD = content['divUSD']
     divPLN = content['divPLN']
 
-    message = f"Ticker: {ticker}\nDividend in USD: {divUSD}\nDividend in PLN: {divPLN}"
-    channel_id = "general"
+    message = f"Ticker: {ticker}\nTotal dividend payed in USD: {divUSD}\nDividend tax to be set aside in PLN: {divPLN}"
+    channel_id = "2023-dividend-payments"
 
     try:
         response = client.chat_postMessage(

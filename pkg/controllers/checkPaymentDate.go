@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/KasperKornak/StockApp/pkg/config"
@@ -99,6 +100,8 @@ func CheckPayment() {
 			noShares := company.Shares
 			div := company.DivQuarterlyRate
 			divPLNtoSend := div * float64(noShares) * q * float64(company.Domestictax) / 100.0
+			tempString := fmt.Sprintf("%.2f", divPLNtoSend)
+			divPLNtoSend, _ = strconv.ParseFloat(tempString, 64)
 
 			var divUSDtoSend float64
 			if company.Currency != "USD" {
@@ -107,8 +110,12 @@ func CheckPayment() {
 				correction := GetForex(pairCorr)
 
 				divUSDtoSend = div * float64(noShares) * correction
+				tempStringIf := fmt.Sprintf("%.2f", divUSDtoSend)
+				divUSDtoSend, _ = strconv.ParseFloat(tempStringIf, 64)
 			} else {
 				divUSDtoSend = div * float64(noShares)
+				tempStringElse := fmt.Sprintf("%.2f", divUSDtoSend)
+				divUSDtoSend, _ = strconv.ParseFloat(tempStringElse, 64)
 			}
 			filter := bson.M{"ticker": company.Ticker}
 			stocks := Client.Database("stock").Collection("tickers")

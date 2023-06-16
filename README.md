@@ -35,8 +35,12 @@
 |`GetMongoTickers()`| **controllers**| Simple func for getting slice of ticker strings. Used for sending requests to polygon.|
 |`SendAPIGet(tickerToCheck string)`|**controllers**| Used for getting payment date - sends request to polygon, then extracts payment date from response JSON and converts it into int.|
 |`GetForex(pair string)`| **controllers**|Used for getting forex rate between USD and PLN. However, can handle other currency pairs.|
+|`SlackRequest(company.Ticker, divUSDtoSend, divPLNtoSend)`| **controllers**| Used to send ticker, dividend in USD and PLN dividend tax to Python SlackBot.|
 
-
+### Python scripts
+| Function | Package | Description |
+|   ---    |    ---    |    ---      |
+|`SlackBot.py`| **slackutils**|Listens to *POST* request on :9009, if one is received it forwards it to user-selected Slack channel.|
 ## Links
 [Folder layout](https://www.youtube.com/watch?v=Y7kuW1qyDng)
 
