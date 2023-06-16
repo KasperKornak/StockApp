@@ -4,7 +4,9 @@ env:
     BACKEND_VARS: ${{ secrets.BACKEND_VARS }}
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
 
@@ -113,19 +115,6 @@ jobs:
             cd main/cmd 
             nohup ./main > app.log 2>&1 &
 
-    - name: Run backend on EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: |
-            sudo chmod +x main/cmd/main 
-            sudo chmod 711 main/cmd/main 
-            cd main/cmd 
-            nohup ./main > app.log 2>&1 &
-            cd ~/main
-
     - name: Run slackBot app on EC2
       uses: appleboy/ssh-action@master
       with:
@@ -134,6 +123,6 @@ jobs:
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         script: |
             sudo chmod 711 main/pkg/slackUtils/SlackBot.py
-            cd pkg/slackUtils
+            cd ~/main/pkg/slackUtils
             pip3 install -r requirements.txt
             nohup python3 SlackBot.py > SlackBot.log 2>&1 &
