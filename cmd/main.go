@@ -28,21 +28,20 @@ func homeGetHandler(w http.ResponseWriter, r *http.Request) {
 func homePostHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		// Handle the error
 		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 		return
 	}
 
-	// Print out the POST data to the terminal
-	fmt.Println("Received POST data:")
-	for key, values := range r.Form {
-		for _, value := range values {
-			fmt.Printf("%s: %s\n", key, value)
-		}
-	}
+	login := r.Form.Get("login")
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
 
-	// You can perform further processing with the POST data here
+	// Print the form data values to the console
+	fmt.Println("Login:", login)
+	fmt.Println("Email:", email)
+	fmt.Println("Password:", password)
 
-	// Send a response to the client
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Form submission successful"))
+	// Continue with your desired logic
+	http.Redirect(w, r, "/home", 302)
 }

@@ -14,7 +14,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="img/style.css" />
     <title>DivTax</title>
   </head>
   <body>
@@ -130,7 +130,7 @@
       </div>
       <div class="modal-body">
         <p class="lead">Welcome to DivTax!</p>
-        <form id="registerForm">
+        <form id="registerForm" method="POST" action="/home">
           <div class="mb-3">
             <label for="login" class="col-form-label">Login:</label>
             <input type="text" class="form-control" id="login" name="login" />
@@ -155,30 +155,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
   integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
   crossorigin="anonymous"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var form = document.getElementById("registerForm");
-    var modal = new bootstrap.Modal(document.getElementById("register")); // Add this line to initialize the modal
-
-    form.addEventListener("submit", function (event) {
-      event.preventDefault(); 
-      var formData = new FormData(form);
-      fetch("/home", {
-        method: "POST",
-        body: formData,
-      })
-        .then(function (response) {
-          if (response.ok) {
-            modal.hide(); // Close the modal if the form submission is successful
-          }
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
-    });
-  });
-</script>
-  
 
     <!-- Footer -->
     <footer class="p-5 bg-dark text-white text-center position-relative">
