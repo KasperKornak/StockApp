@@ -17,6 +17,8 @@ func main() {
 
 	r.HandleFunc("/home", homeGetHandler).Methods("GET")
 	r.HandleFunc("/home", homePostHandler).Methods("POST")
+	r.HandleFunc("/login", loginGetHandler).Methods("GET")
+	r.HandleFunc("/login", loginPostHandler).Methods("POST")
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
 }
@@ -43,5 +45,27 @@ func homePostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Password:", password)
 
 	// Continue with your desired logic
-	http.Redirect(w, r, "/home", 302)
+	http.Redirect(w, r, "/home", http.StatusFound)
+}
+
+func loginGetHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "login.html", nil)
+}
+
+func loginPostHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		// Handle the error
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		return
+	}
+	login := r.Form.Get("login")
+	password := r.Form.Get("password")
+
+	// Print the form data values to the console
+	fmt.Println("Login:", login)
+	fmt.Println("Password:", password)
+
+	// Continue with your desired logic
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
