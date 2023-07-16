@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart Example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/index.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    .custom-section {
+      height: calc(100vh - 56px); /* Adjust the height as desired */
+    }
+
+    #chartContainer {
+      height: calc(100% - 56px);
+      width: 95vw;
+    }
+  </style>
+</head>
+<body>
+	
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 fixed-top">
+    <div class="container">
+      <a href="#" class="navbar-brand">💸 Div<span class="text-warning">Tax</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navmenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a href="/positions" class="nav-link">Positions</a>
+          </li>
+          <li class="nav-item">
+            <a href="/logout" class="nav-link">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Showcase -->
+  <section class="bg-dark text-light p-5 p-lg-3 pt-lg-5 text-center text-sm-start showcase custom-section">
+    <div class="container-fluid h-100">
+		<div class="row h-100 align-items-center">
+			<div class="col">
+				<h1 class="text-center">Hello <span class="text-warning">{{ .Username }}</span>!</h1>
+				<h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ .DividendTax }}</span> PLN</h2>
+				<h2 class="text-center">Dividends YTD: <span class="text-warning">{{ .DividendsYTD }}</span> USD</h2>
+			</div>
+			<div class="col">
+				<div id="chartContainer">
+					<canvas id="chart"></canvas>
+				</div>
+			</div>
+		</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
+    <div class="container">
+      <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
+  <script>
+    function fetchDataAndRenderChart() {
+      $.ajax({
+        url: '/api/data',
+        method: 'GET',
+        success: function(data) {
+          var chartData = {
+            labels: data.Months.map(function(month) {
+              return month.Name;
+            }),
+            datasets: [{
+              label: 'Dividends',
+              data: data.Months.map(function(month) {
+                return month.Value;
+              }),
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          };
+
+          var chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+			
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                beginAtZero: true
+              }
+            }
+          };
+
+          var ctx = document.getElementById('chart').getContext('2d');
+
+          var chart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: chartOptions
+          });
+        },
+        error: function(error) {
+          console.error('Error fetching data:', error);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchDataAndRenderChart);
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+  crossorigin="anonymous"></script>
+</body>
+</html>
