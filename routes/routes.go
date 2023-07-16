@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"fmt"
-
 	"github.com/KasperKornak/StockApp/middleware"
 	"github.com/KasperKornak/StockApp/models"
 	"github.com/KasperKornak/StockApp/sessions"
@@ -129,7 +127,7 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	CurrUser.Id = models.GetName(r)
 	tempUser.Id = CurrUser.Id
 	CurrUser.Username, _ = tempUser.GetUsername()
-	stocks := models.MongoClient.Database("kasper").Collection("kasper")
+	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
 
 	mongotransfer = MongoSummary{}
@@ -152,7 +150,7 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 	CurrUser.Id = models.GetName(r)
 	tempUser.Id = CurrUser.Id
 	CurrUser.Username, _ = tempUser.GetUsername()
-	stocks := models.MongoClient.Database("kasper").Collection("kasper")
+	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
 
 	var mongotransfer MongoSummary
@@ -175,7 +173,6 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	fmt.Println(mongomonths)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)

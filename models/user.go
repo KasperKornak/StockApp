@@ -1,12 +1,13 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/KasperKornak/StockApp/sessions"
-
 	"github.com/go-redis/redis"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,6 +20,24 @@ var (
 
 type User struct {
 	Id int64
+}
+
+type initYearSummary struct {
+	Year         int     `bson:"year"`
+	DividendsYTD float64 `bson:"dividendytd"`
+	DividendTax  float64 `bson:"dividendtax"`
+	Ticker       string  `bson:"ticker"`
+}
+
+type initMonthData struct {
+	Name  string  `bson:"name"`
+	Value float64 `bson:"value"`
+}
+
+type initMongoMonths struct {
+	Year   int             `bson:"year"`
+	Ticker string          `bson:"ticker"`
+	Months []initMonthData `bson:"months"`
 }
 
 func NewUser(username string, hash []byte) (*User, error) {
@@ -98,6 +117,40 @@ func RegisterUser(username, password string) error {
 		return err
 	}
 	_, err = NewUser(username, hash)
+
+	collection := MongoClient.Database("users").Collection(username)
+	yearSummary := &initYearSummary{
+		Year:         time.Now().Year(),
+		DividendsYTD: 0.0,
+		DividendTax:  0.0,
+		Ticker:       "YEAR_SUMMARY",
+	}
+
+	collection.InsertOne(context.TODO(), yearSummary)
+
+	// Create the document
+	months := []initMonthData{
+		{Name: "Jan", Value: 0.0},
+		{Name: "Feb", Value: 0.0},
+		{Name: "Mar", Value: 0.0},
+		{Name: "Apr", Value: 0.0},
+		{Name: "May", Value: 0.0},
+		{Name: "Jun", Value: 0.0},
+		{Name: "Jul", Value: 0.0},
+		{Name: "Aug", Value: 0.0},
+		{Name: "Sep", Value: 0.0},
+		{Name: "Oct", Value: 0.0},
+		{Name: "Nov", Value: 0.0},
+		{Name: "Dec", Value: 0.0},
+	}
+
+	doc := initMongoMonths{
+		Year:   time.Now().Year(),
+		Ticker: "MONTH_SUMARY",
+		Months: months,
+	}
+
+	collection.InsertOne(context.TODO(), doc)
 	return err
 }
 
