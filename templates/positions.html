@@ -85,64 +85,212 @@
 
   <!-- Button -->
   <div class="container mt-3 text-center">
-    <button id="positionsButton" class="btn btn-primary">Add/Edit/Delete Positions</button>
+    <button id="positionsButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">Add/Edit/Delete Positions</button>
   </div>
 
-  <!-- Footer -->
-  <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
-    <div class="container">
-      <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+<!-- Edit Modal -->
+<div class="modal fade text-dark" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Position</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="mb-3">
+            <label for="tickerInput" class="form-label">Ticker</label>
+            <input type="text" class="form-control" id="tickerInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="sharesInput" class="form-label">Shares</label>
+            <input type="number" class="form-control" id="sharesInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="taxInput" class="form-label">Domestic Tax</label>
+            <input type="number" class="form-control" id="taxInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="currencyInput" class="form-label">Currency</label>
+            <input type="text" class="form-control" id="currencyInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="quarterlyRateInput" class="form-label">Div Quarterly Rate</label>
+            <input type="number" class="form-control" id="quarterlyRateInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="divYtdInput" class="form-label">Div YTD</label>
+            <input type="number" class="form-control" id="divYtdInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="divPlnInput" class="form-label">Div PLN</label>
+            <input type="number" class="form-control" id="divPlnInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="nextPaymentInput" class="form-label">Next Payment</label>
+            <input type="date" class="form-control" id="nextPaymentInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="prevPaymentInput" class="form-label">Prev Payment</label>
+            <input type="date" class="form-control" id="prevPaymentInput" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Operation</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="operation" id="addRadio" value="add" required>
+              <label class="form-check-label" for="addRadio">
+                Add
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="operation" id="editRadio" value="edit" required>
+              <label class="form-check-label" for="editRadio">
+                Edit
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="operation" id="deleteRadio" value="delete" required>
+              <label class="form-check-label" for="deleteRadio">
+                Delete
+              </label>
+            </div>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
-  </footer>
+  </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
-  <script>
-    function formatDate(dateString) {
-      const date = new Date(dateString * 1000);
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-      return date.toLocaleDateString('en-GB', options);
-    }
+<!-- Footer -->
+<footer class="pt-0 p-sm-8 bg-dark text-white text-center">
+  <div class="container">
+    <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+  </div>
+</footer>
 
-    $(document).ready(function() {
-      $.ajax({
-        url: '/api/positions',
-        method: 'GET',
-        success: function(response) {
-          var positionsTableBody = $('#positionsTable tbody');
-          var stocks = response.stocks;
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
+<script>
+  function formatDate(dateString) {
+    const date = new Date(dateString * 1000);
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options);
+  }
 
-          if (stocks.length === 0) {
-            $('#noPositionsText').text('No positions yet');
-          } else {
-            stocks.forEach(function(position) {
-              var row = $('<tr>');
+  $(document).ready(function() {
+    $.ajax({
+      url: '/api/positions',
+      method: 'GET',
+      success: function(response) {
+        var positionsTableBody = $('#positionsTable tbody');
+        var stocks = response.stocks;
 
-              $('<td>').text(position.ticker).appendTo(row);
-              $('<td>').text(position.shares).appendTo(row);
-              $('<td>').text(position.domestictax).appendTo(row);
-              $('<td>').text(position.currency).appendTo(row);
-              $('<td>').text(position.divquarterlyrate).appendTo(row);
-              $('<td>').text(position.divytd).appendTo(row);
-              $('<td>').text(position.divpln).appendTo(row);
-              $('<td>').text(formatDate(position.nextpayment)).appendTo(row);
-              $('<td>').text(formatDate(position.prevpayment)).appendTo(row);
+        if (stocks.length === 0) {
+          $('#noPositionsText').text('No positions yet');
+        } else {
+          stocks.forEach(function(position) {
+            var row = $('<tr>');
 
-              positionsTableBody.append(row);
-            });
-          }
-        },
-        error: function(error) {
-          console.error('Error fetching data:', error);
+            $('<td>').text(position.ticker).appendTo(row);
+            $('<td>').text(position.shares).appendTo(row);
+            $('<td>').text(position.domestictax).appendTo(row);
+            $('<td>').text(position.currency).appendTo(row);
+            $('<td>').text(position.divquarterlyrate).appendTo(row);
+            $('<td>').text(position.divytd).appendTo(row);
+            $('<td>').text(position.divpln).appendTo(row);
+            $('<td>').text(formatDate(position.nextpayment)).appendTo(row);
+            $('<td>').text(formatDate(position.prevpayment)).appendTo(row);
+
+            positionsTableBody.append(row);
+          });
         }
-      });
-
-      $('#positionsButton').click(function() {
-        // Handle button click event (add/edit/delete positions)
-      });
+      },
+      error: function(error) {
+        console.error('Error fetching data:', error);
+      }
     });
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
-  crossorigin="anonymous"></script>
+
+    $('#editForm').submit(function(e) {
+      e.preventDefault();
+      
+      // Retrieve form data
+      var ticker = $('#tickerInput').val();
+      var shares = $('#sharesInput').val();
+      var tax = $('#taxInput').val();
+      var currency = $('#currencyInput').val();
+      var quarterlyRate = $('#quarterlyRateInput').val();
+      var divYtd = $('#divYtdInput').val();
+      var divPln = $('#divPlnInput').val();
+      var nextPayment = $('#nextPaymentInput').val();
+      var prevPayment = $('#prevPaymentInput').val();
+      
+      // Determine the selected operation
+      var selectedOperation = document.querySelector('input[name="operation"]:checked').value;
+      
+      // Create the data object to be sent in the request
+      var data = {
+        ticker: ticker,
+        shares: shares,
+        domestictax: tax,
+        currency: currency,
+        divquarterlyrate: quarterlyRate,
+        divytd: divYtd,
+        divpln: divPln,
+        nextpayment: nextPayment,
+        prevpayment: prevPayment
+      };
+      
+      // Send the appropriate request based on the selected operation
+      if (selectedOperation === 'add') {
+        $.ajax({
+          url: '/api/update',
+          method: 'POST',
+          data: JSON.stringify(data),
+          contentType: 'application/json',
+          success: function(response) {
+            // Handle success
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
+      } else if (selectedOperation === 'edit') {
+        $.ajax({
+          url: '/api/update',
+          method: 'PUT',
+          data: JSON.stringify(data),
+          contentType: 'application/json',
+          success: function(response) {
+            // Handle success
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
+      } else if (selectedOperation === 'delete') {
+        $.ajax({
+          url: '/api/update',
+          method: 'DELETE',
+          data: JSON.stringify(data),
+          contentType: 'application/json',
+          success: function(response) {
+            // Handle success
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
+      }
+      
+      // Close the modal
+      $('#editModal').modal('hide');
+    });
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+crossorigin="anonymous"></script>
 </body>
 </html>

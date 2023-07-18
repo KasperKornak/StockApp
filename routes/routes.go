@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+
 	"log"
 	"net/http"
 	"time"
@@ -47,6 +48,10 @@ type MongoMonths struct {
 	Months []MonthData `bson:"months"`
 }
 
+type DeletePosition struct {
+	Ticker string `json:"ticker" bson:"ticker"`
+}
+
 func NewRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", middleware.AuthRequired(indexGetHandler)).Methods("GET")
@@ -59,6 +64,9 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/logout", registerPostHandler).Methods("GET")
 	r.HandleFunc("/api/data", barDataHandler).Methods("GET")
 	r.HandleFunc("/api/positions", positionsDataHandler).Methods("GET")
+	r.HandleFunc("/api/update", updatePutHandler).Methods("PUT")
+	r.HandleFunc("/api/update", positionsDataHandler).Methods("POST")
+	r.HandleFunc("/api/update", updateDeleteHandler).Methods("DELETE")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	return r
@@ -206,4 +214,40 @@ func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
 
 func positionsGetHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "positions.html", nil)
+}
+
+func updatePutHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	var toDelete DeletePosition
+	var tempUser models.User
+	id := models.GetName(r)
+	tempUser.Id = id
+	username, _ := tempUser.GetUsername()
+	err := json.NewDecoder(r.Body).Decode(&toDelete)
+	if err != nil {
+		log.Println(err)
+	}
+
+	stocks := models.MongoClient.Database("users").Collection(username)
+	filter := bson.M{
+		"ticker": "positions",
+	}
+	update := bson.M{
+		"$pull": bson.M{
+			"stocks": bson.M{
+				"ticker": toDelete.Ticker,
+			},
+		},
+	}
+	result, err := stocks.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Printf("error deleting document: %v\n", err)
+	}
+
+	if result.ModifiedCount != 1 {
+		log.Print("contact administrator something went wrong :| \n")
+	}
 }
