@@ -168,6 +168,12 @@ func RegisterUser(username, password string) error {
 	}
 
 	collection.InsertOne(context.TODO(), doc)
+
+	stockDoc := Positions{
+		Ticker: "positions",
+		Stocks: []PositionData{},
+	}
+	collection.InsertOne(context.TODO(), stockDoc)
 	return err
 }
 
