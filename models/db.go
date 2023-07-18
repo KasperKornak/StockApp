@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-redis/redis"
 
@@ -19,6 +21,7 @@ func Init() {
 	client = redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -29,4 +32,16 @@ func Init() {
 	}
 
 	MongoClient, _ = mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	registerDisconnectHandler()
+}
+
+func registerDisconnectHandler() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-c
+		MongoClient.Disconnect(context.Background())
+		os.Exit(0)
+	}()
 }
