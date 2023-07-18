@@ -40,6 +40,23 @@ type initMongoMonths struct {
 	Months []initMonthData `bson:"months"`
 }
 
+type PositionData struct {
+	Ticker           string  `json:"ticker"`
+	Shares           int     `json:"shares"`
+	Domestictax      int     `json:"domestictax"`
+	Currency         string  `json:"currency"`
+	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
+	DivYTD           float64 `json:"divytd" bson:"divytd"`
+	DivPLN           float64 `json:"divpln" bson:"divpln"`
+	NextPayment      int     `json:"nextpayment" bson:"nextpayment"`
+	PrevPayment      int     `json:"prevpayment" bson:"prevpayment"`
+}
+
+type Positions struct {
+	Ticker string         `json:"ticker" bson:"year"`
+	Stocks []PositionData `json:"stocks" bson:"stocks"`
+}
+
 func NewUser(username string, hash []byte) (*User, error) {
 	exists, _ := client.HExists("user:by-username", username).Result()
 	if exists {

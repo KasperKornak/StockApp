@@ -54,9 +54,11 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
 	r.HandleFunc("/logout", logoutGetHandler).Methods("GET")
 	r.HandleFunc("/register", registerGetHandler).Methods("GET")
+	r.HandleFunc("/positions", positionsGetHandler).Methods("GET")
 	r.HandleFunc("/register", registerPostHandler).Methods("POST")
 	r.HandleFunc("/logout", registerPostHandler).Methods("GET")
 	r.HandleFunc("/api/data", barDataHandler).Methods("GET")
+	r.HandleFunc("/api/positions", positionsDataHandler).Methods("GET")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	return r
@@ -176,4 +178,32 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
+}
+
+func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
+	var toTable models.Positions
+	var tempUser models.User
+	id := models.GetName(r)
+	tempUser.Id = id
+	username, _ := tempUser.GetUsername()
+	stocks := models.MongoClient.Database("users").Collection(username)
+	filter := bson.M{"ticker": "positions"}
+
+	err := stocks.FindOne(context.TODO(), filter).Decode(&toTable)
+	if err != nil {
+		log.Println(err)
+	}
+
+	jsonData, err := json.Marshal(toTable)
+	if err != nil {
+		log.Println(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func positionsGetHandler(w http.ResponseWriter, r *http.Request) {
+	utils.ExecuteTemplate(w, "positions.html", nil)
 }
