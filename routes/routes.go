@@ -231,6 +231,8 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
+	models.TransferDivs(username, toDelete.Ticker)
+
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{
 		"ticker": "positions",

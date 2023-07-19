@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/KasperKornak/StockApp/sessions"
 	"github.com/go-redis/redis"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,7 +56,7 @@ type PositionData struct {
 }
 
 type Positions struct {
-	Ticker string         `json:"ticker" bson:"year"`
+	Ticker string         `json:"ticker" bson:"ticker"`
 	Stocks []PositionData `json:"stocks" bson:"stocks"`
 }
 
@@ -171,7 +174,17 @@ func RegisterUser(username, password string) error {
 
 	stockDoc := Positions{
 		Ticker: "positions",
-		Stocks: []PositionData{},
+		Stocks: []PositionData{
+			{Ticker: "DELETED_SUM",
+				Shares:           0,
+				Domestictax:      0,
+				Currency:         "USD",
+				DivQuarterlyRate: 0.0,
+				DivYTD:           0.0,
+				DivPLN:           0.0,
+				NextPayment:      0,
+				PrevPayment:      0},
+		},
 	}
 	collection.InsertOne(context.TODO(), stockDoc)
 	return err
@@ -182,4 +195,56 @@ func GetName(r *http.Request) int64 {
 	untypedUserId := session.Values["user_id"]
 	userId, _ := untypedUserId.(int64)
 	return userId
+}
+
+func TransferDivs(username string, ticker string) {
+	stocks := MongoClient.Database("users").Collection(username)
+
+	deletedStocks := ModelGetStockByTicker("DELETED_SUM", username)
+
+	toDelete := ModelGetStockByTicker(ticker, username)
+	deletedStocks.DivYTD = deletedStocks.DivYTD + toDelete.DivYTD
+	deletedStocks.DivPLN = deletedStocks.DivPLN + toDelete.DivPLN
+
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "stocks.$[elem].divytd", Value: deletedStocks.DivYTD},
+			{Key: "stocks.$[elem].divpln", Value: deletedStocks.DivPLN},
+		}},
+	}
+
+	arrayFilters := options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{"elem.ticker": "DELETED_SUM"},
+		},
+	}
+
+	updateOptions := options.Update().SetArrayFilters(arrayFilters)
+	filter := bson.M{"stocks": bson.M{"$elemMatch": bson.M{"ticker": ticker}}, "ticker": "positions"}
+	_, err := stocks.UpdateOne(context.TODO(), filter, update, updateOptions)
+	if err != nil {
+		log.Println("Error updating document:", err)
+	}
+}
+
+func ModelGetStockByTicker(ticker string, username string) PositionData {
+	stocks := MongoClient.Database("users").Collection(username)
+	var stockData struct {
+		Stocks []PositionData `bson:"stocks"`
+	}
+
+	filter := bson.M{"stocks": bson.M{"$elemMatch": bson.M{"ticker": ticker}}, "ticker": "positions"}
+	err := stocks.FindOne(context.TODO(), filter).Decode(&stockData)
+	if err != nil {
+		log.Println(err)
+		return PositionData{}
+	}
+
+	for _, stock := range stockData.Stocks {
+		if stock.Ticker == ticker {
+			return stock
+		}
+	}
+
+	return PositionData{}
 }
