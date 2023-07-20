@@ -64,8 +64,8 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/logout", registerPostHandler).Methods("GET")
 	r.HandleFunc("/api/data", barDataHandler).Methods("GET")
 	r.HandleFunc("/api/positions", positionsDataHandler).Methods("GET")
-	r.HandleFunc("/api/update", updatePutHandler).Methods("PUT")
-	r.HandleFunc("/api/update", positionsDataHandler).Methods("POST")
+	r.HandleFunc("/api/update", updateEditHandler).Methods("PUT")
+	r.HandleFunc("/api/update", updateAddHandler).Methods("POST")
 	r.HandleFunc("/api/update", updateDeleteHandler).Methods("DELETE")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
@@ -216,7 +216,7 @@ func positionsGetHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "positions.html", nil)
 }
 
-func updatePutHandler(w http.ResponseWriter, r *http.Request) {
+func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
@@ -252,4 +252,8 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	if result.ModifiedCount != 1 {
 		log.Print("contact administrator something went wrong :| \n")
 	}
+}
+
+func updateAddHandler(w http.ResponseWriter, r *http.Request) {
+
 }

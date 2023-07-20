@@ -90,11 +90,39 @@
     <button id="deleteButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Position</button>
   </div>
 
-  <!-- Add Modal -->
-  <div class="modal fade text-dark" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <!-- Add modal content here -->
-    <!-- Use the same form structure as before -->
+<!-- Add Modal -->
+<div class="modal fade text-dark" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addModalLabel">Add Position</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addForm">
+          <div class="mb-3">
+            <label for="tickerInputAdd" class="form-label">Ticker</label>
+            <input type="text" class="form-control" id="tickerInputAdd" required>
+          </div>
+          <div class="mb-3">
+            <label for="sharesInput" class="form-label">Shares</label>
+            <input type="number" class="form-control" id="sharesInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="domesticTaxInput" class="form-label">Domestic Tax</label>
+            <input type="number" class="form-control" id="domesticTaxInput" required>
+          </div>
+          <!-- Add other fields for adding positions (if needed) -->
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="addSubmitButton" type="button" class="btn btn-primary">Add</button>
+      </div>
+    </div>
   </div>
+</div>
+
 
   <!-- Edit Modal -->
   <div class="modal fade text-dark" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -175,6 +203,40 @@
         }
       });
 
+      $('#addSubmitButton').click(function() {
+      var ticker = $('#tickerInputAdd').val();
+      var shares = parseInt($('#sharesInput').val());
+      var domesticTax = parseFloat($('#domesticTaxInput').val());
+
+      var data = {
+        ticker: ticker,
+        shares: shares,
+        domestictax: domesticTax
+        // Add other fields as needed for adding positions
+      };
+      $.ajax({
+        url: '/api/update',
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(response) {
+          // Handle success, e.g., refresh the table to show the new data
+          // You can also close the modal if needed
+          $('#addModal').modal('hide');
+          location.reload(); // Reload the page to show the updated data
+        },
+        error: function(error) {
+          console.error('Error:', error);
+        }
+      });
+
+      // Clear form fields
+      $('#tickerInputAdd').val('');
+      $('#sharesInput').val('');
+      $('#domesticTaxInput').val('');
+    });
+  });
+
       // Add code to handle the delete confirmation
       $('#deleteSubmitButton').click(function() {
         var ticker = $('#tickerInputDelete').val(); // Replace with the actual input field IDs
@@ -201,7 +263,7 @@
 
         $('#deleteModal').modal('hide');
       });
-    });
+
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
   integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
