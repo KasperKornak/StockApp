@@ -147,11 +147,62 @@
 </div>
 
 
-  <!-- Edit Modal -->
-  <div class="modal fade text-dark" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <!-- Edit modal content here -->
-    <!-- Use the same form structure as before -->
+<!-- Edit Modal -->
+<div class="modal fade text-dark" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Position</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="mb-3">
+            <label for="tickerInputEdit" class="form-label">Ticker</label>
+            <input type="text" class="form-control" id="tickerInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="sharesInputEdit" class="form-label">Shares</label>
+            <input type="number" class="form-control" id="sharesInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="domesticTaxInputEdit" class="form-label">Domestic Tax</label>
+            <input type="number" class="form-control" id="domesticTaxInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="currencyInputEdit" class="form-label">Currency</label>
+            <input type="text" class="form-control" id="currencyInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="divquarterlyrateInputEdit" class="form-label">Div Quarterly Rate</label>
+            <input type="number" class="form-control" id="divquarterlyrateInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="divytdInputEdit" class="form-label">Div YTD</label>
+            <input type="number" class="form-control" id="divytdInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="divplnInputEdit" class="form-label">Div PLN</label>
+            <input type="number" class="form-control" id="divplnInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="nextpaymentInputEdit" class="form-label">Next Payment</label>
+            <input type="date" class="form-control" id="nextpaymentInputEdit" required>
+          </div>
+          <div class="mb-3">
+            <label for="prevInputEdit" class="form-label">Prev Payment</label>
+            <input type="date" class="form-control" id="prevInputEdit" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="editSubmitButton" type="button" class="btn btn-primary">Edit</button>
+      </div>
+    </div>
   </div>
+</div>
+
 
   <!-- Delete Modal -->
   <div class="modal fade text-dark" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -280,6 +331,61 @@
 
     });
   });
+
+  $('#editSubmitButton').click(function() {
+      var ticker = $('#tickerInputEdit').val();
+      var shares = parseInt($('#sharesInputEdit').val());
+      var domesticTax = parseFloat($('#domesticTaxInputEdit').val());
+      var currencyInput = $('#currencyInputEdit').val();
+      var divquarterlyRate = parseFloat($('#divquarterlyrateInputEdit').val());
+      var divYTD = parseFloat($('#divytdInputEdit').val());
+      var divPLN = parseFloat($('#divplnInputEdit').val());
+      var nextPaymentDate = new Date($('#nextpaymentInputEdit').val());
+      var nextPayment = Math.floor(nextPaymentDate.getTime() / 1000);
+      var prevPaymentDate = new Date($('#prevInputEdit').val());
+      var prev = Math.floor(prevPaymentDate.getTime() / 1000);
+
+      var data = {
+        ticker: ticker,
+        shares: shares,
+        domestictax: domesticTax,
+        currency: currencyInput,
+        divquarterlyrate: divquarterlyRate,
+        divytd: divYTD,
+        divpln: divPLN,
+        nextpayment: nextPayment,
+        prevpayment: prev
+
+        // Add other fields as needed for adding positions
+      };
+      $.ajax({
+        url: '/api/update',
+        method: 'PUT',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(response) {
+          // Handle success, e.g., refresh the table to show the new data
+          // You can also close the modal if needed
+          $('#editModal').modal('hide');
+          location.reload(); 
+        },
+        error: function(error) {
+          console.error('Error:', error);
+        }
+      });
+
+      // Clear form fields
+      $('#tickerInputEdit').val('');
+      $('#sharesInputEdit').val('');
+      $('#domesticTaxInputEdit').val('');
+      $('#currencyInputEdit').val('');
+      $('#divquarterlyrateInputEdit').val('');
+      $('#divytdInputEdit').val('');
+      $('#divplnInputEdit').val('');
+      $('#nextpaymentInputEdit').val('');
+      $('#prevInputEdit').val('');
+
+    });
 
       // Add code to handle the delete confirmation
       $('#deleteSubmitButton').click(function() {

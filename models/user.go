@@ -248,3 +248,60 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 
 	return PositionData{}
 }
+
+func EditPosition(edit PositionData, username string) PositionData {
+	currState := ModelGetStockByTicker(edit.Ticker, username)
+	finalVersion := PositionData{}
+	finalVersion.Ticker = edit.Ticker
+	if edit.Currency != "" {
+		finalVersion.Currency = edit.Currency
+	} else {
+		finalVersion.Currency = currState.Currency
+	}
+
+	if edit.Shares != 0 {
+		finalVersion.Shares = edit.Shares
+	} else {
+		finalVersion.Shares = currState.Shares
+	}
+
+	if edit.Domestictax != 0 {
+		finalVersion.Domestictax = edit.Domestictax
+	} else {
+		finalVersion.Domestictax = currState.Domestictax
+	}
+
+	if edit.DivQuarterlyRate != 0 {
+		finalVersion.DivQuarterlyRate = edit.DivQuarterlyRate
+	} else {
+		finalVersion.DivQuarterlyRate = currState.DivQuarterlyRate
+	}
+
+	if edit.DivYTD != 0 {
+		finalVersion.DivYTD = edit.DivYTD
+		// add checkng to summary
+	} else {
+		finalVersion.DivYTD = currState.DivYTD
+	}
+
+	if edit.DivPLN != 0 {
+		finalVersion.DivPLN = edit.DivPLN
+		// add to checking summary
+	} else {
+		finalVersion.DivPLN = currState.DivPLN
+	}
+
+	if edit.NextPayment != 0 {
+		finalVersion.NextPayment = edit.NextPayment
+	} else {
+		finalVersion.NextPayment = currState.NextPayment
+	}
+
+	if edit.PrevPayment != 0 {
+		finalVersion.PrevPayment = edit.PrevPayment
+	} else {
+		finalVersion.PrevPayment = currState.PrevPayment
+	}
+
+	return finalVersion
+}

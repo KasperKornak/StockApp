@@ -218,7 +218,26 @@ func positionsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateEditHandler(w http.ResponseWriter, r *http.Request) {
+	var toEdit models.PositionData
+	err := json.NewDecoder(r.Body).Decode(&toEdit)
+	if err != nil {
+		log.Println(err)
+	}
+	var tempUser models.User
+	id := models.GetName(r)
+	tempUser.Id = id
+	username, _ := tempUser.GetUsername()
+	toEdit.Currency = strings.ToUpper(toEdit.Currency)
+	toEdit.Ticker = strings.ToUpper(toEdit.Ticker)
 
+	edited := models.EditPosition(toEdit, username)
+	stocks := models.MongoClient.Database("users").Collection(username)
+	filter := bson.M{"stocks.ticker": "TXN"}
+	update := bson.M{"$set": bson.M{"stocks.$": edited}}
+	_, err = stocks.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Println("Error updating document:", err)
+	}
 }
 
 func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -230,6 +249,11 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&toDelete)
 	if err != nil {
 		log.Println(err)
+	}
+
+	if toDelete.Ticker == "DELETED_SUM" {
+		log.Println("can't delete this position")
+		return
 	}
 
 	models.TransferDivs(username, toDelete.Ticker)
@@ -263,7 +287,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if toAdd.Ticker == "DELETED_SUM" {
-		log.Println("can't delete this positions")
+		log.Println("can't add this position")
 		return
 	}
 
