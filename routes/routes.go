@@ -6,6 +6,7 @@ import (
 
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/KasperKornak/StockApp/middleware"
@@ -260,6 +261,15 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	if toAdd.Ticker == "DELETED_SUM" {
+		log.Println("can't delete this positions")
+		return
+	}
+
+	toAdd.Currency = strings.ToUpper(toAdd.Currency)
+	toAdd.Ticker = strings.ToUpper(toAdd.Ticker)
+
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
