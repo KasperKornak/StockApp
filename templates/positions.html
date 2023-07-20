@@ -130,11 +130,11 @@
           </div>
           <div class="mb-3">
             <label for="nextpaymentInput" class="form-label">Next Payment</label>
-            <input type="number" class="form-control" id="nextpaymentInput" required>
+            <input type="date" class="form-control" id="nextpaymentInput" required>
           </div>
           <div class="mb-3">
             <label for="prevInput" class="form-label">Prev Payment</label>
-            <input type="number" class="form-control" id="prevInput" required>
+            <input type="date" class="form-control" id="prevInput" required>
           </div>
         </form>
       </div>
@@ -233,8 +233,10 @@
       var divquarterlyRate = parseFloat($('#divquarterlyrateInput').val());
       var divYTD = parseFloat($('#divytdInput').val());
       var divPLN = parseFloat($('#divplnInput').val());
-      var nextPayment = parseInt($('#nextpaymentInput').val());
-      var prev = parseInt($('#prevInput').val());
+      var nextPaymentDate = new Date($('#nextpaymentInput').val());
+      var nextPayment = Math.floor(nextPaymentDate.getTime() / 1000);
+      var prevPaymentDate = new Date($('#prevInput').val());
+      var prev = Math.floor(prevPaymentDate.getTime() / 1000);
 
       var data = {
         ticker: ticker,
