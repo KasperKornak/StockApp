@@ -44,10 +44,10 @@ type initMongoMonths struct {
 }
 
 type PositionData struct {
-	Ticker           string  `json:"ticker"`
-	Shares           int     `json:"shares"`
-	Domestictax      int     `json:"domestictax"`
-	Currency         string  `json:"currency"`
+	Ticker           string  `json:"ticker" bson:"ticker"`
+	Shares           int     `json:"shares" bson:"shares"`
+	Domestictax      int     `json:"domestictax" bson:"domestictax"`
+	Currency         string  `json:"currency" bson:"currency"`
 	DivQuarterlyRate float64 `json:"divquarterlyrate" bson:"divquarterlyrate"`
 	DivYTD           float64 `json:"divytd" bson:"divytd"`
 	DivPLN           float64 `json:"divpln" bson:"divpln"`

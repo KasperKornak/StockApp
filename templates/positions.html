@@ -112,7 +112,30 @@
             <label for="domesticTaxInput" class="form-label">Domestic Tax</label>
             <input type="number" class="form-control" id="domesticTaxInput" required>
           </div>
-          <!-- Add other fields for adding positions (if needed) -->
+          <div class="mb-3">
+            <label for="currencyInput" class="form-label">Currency</label>
+            <input type="text" class="form-control" id="currencyInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="divquarterlyrateInput" class="form-label">Div quarterly rate</label>
+            <input type="number" class="form-control" id="divquarterlyrateInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="divytdInput" class="form-label">Div YTD</label>
+            <input type="number" class="form-control" id="divytdInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="divplnInput" class="form-label">Div PLN</label>
+            <input type="number" class="form-control" id="divplnInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="nextpaymentInput" class="form-label">Next Payment</label>
+            <input type="number" class="form-control" id="nextpaymentInput" required>
+          </div>
+          <div class="mb-3">
+            <label for="prevInput" class="form-label">Prev Payment</label>
+            <input type="number" class="form-control" id="prevInput" required>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -144,7 +167,6 @@
               <label for="tickerInputDelete" class="form-label">Ticker</label>
               <input type="text" class="form-control" id="tickerInputDelete" required>
             </div>
-            <!-- Add other fields for deleting positions (if needed) -->
           </form>
         </div>
         <div class="modal-footer">
@@ -207,11 +229,24 @@
       var ticker = $('#tickerInputAdd').val();
       var shares = parseInt($('#sharesInput').val());
       var domesticTax = parseFloat($('#domesticTaxInput').val());
+      var currencyInput = $('#currencyInput').val();
+      var divquarterlyRate = parseFloat($('#divquarterlyrateInput').val());
+      var divYTD = parseFloat($('#divytdInput').val());
+      var divPLN = parseFloat($('#divplnInput').val());
+      var nextPayment = parseInt($('#nextpaymentInput').val());
+      var prev = parseInt($('#prevInput').val());
 
       var data = {
         ticker: ticker,
         shares: shares,
-        domestictax: domesticTax
+        domestictax: domesticTax,
+        currency: currencyInput,
+        divquarterlyrate: divquarterlyRate,
+        divytd: divYTD,
+        divpln: divPLN,
+        nextpayment: nextPayment,
+        prevpayment: prev
+
         // Add other fields as needed for adding positions
       };
       $.ajax({
@@ -223,7 +258,7 @@
           // Handle success, e.g., refresh the table to show the new data
           // You can also close the modal if needed
           $('#addModal').modal('hide');
-          location.reload(); // Reload the page to show the updated data
+          location.reload(); 
         },
         error: function(error) {
           console.error('Error:', error);
@@ -234,6 +269,13 @@
       $('#tickerInputAdd').val('');
       $('#sharesInput').val('');
       $('#domesticTaxInput').val('');
+      $('#currencyInput').val('');
+      $('#divquarterlyrateInput').val('');
+      $('#divytdInput').val('');
+      $('#divplnInput').val('');
+      $('#nextpaymentInput').val('');
+      $('#prevInput').val('');
+
     });
   });
 
@@ -251,7 +293,7 @@
           data: JSON.stringify(data),
           contentType: 'application/json',
           success: function(response) {
-            // Handle success
+            location.reload();
           },
           error: function(error) {
             console.error('Error:', error);

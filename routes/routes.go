@@ -255,5 +255,22 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateAddHandler(w http.ResponseWriter, r *http.Request) {
-
+	var toAdd models.PositionData
+	err := json.NewDecoder(r.Body).Decode(&toAdd)
+	if err != nil {
+		log.Println(err)
+	}
+	var tempUser models.User
+	id := models.GetName(r)
+	tempUser.Id = id
+	username, _ := tempUser.GetUsername()
+	stocks := models.MongoClient.Database("users").Collection(username)
+	filter := bson.M{
+		"ticker": "positions",
+	}
+	update := bson.M{"$push": bson.M{"stocks": toAdd}}
+	_, err = stocks.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Println("Error updating document: ", err)
+	}
 }
