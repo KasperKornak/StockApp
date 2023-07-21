@@ -90,61 +90,44 @@
     <button id="deleteButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Position</button>
   </div>
 
-<!-- Add Modal -->
-<div class="modal fade text-dark" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Add Position</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="addForm">
-          <div class="mb-3">
-            <label for="tickerInputAdd" class="form-label">Ticker</label>
-            <input type="text" class="form-control" id="tickerInputAdd" required>
-          </div>
-          <div class="mb-3">
-            <label for="sharesInput" class="form-label">Shares</label>
-            <input type="number" class="form-control" id="sharesInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="domesticTaxInput" class="form-label">Domestic Tax</label>
-            <input type="number" class="form-control" id="domesticTaxInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="currencyInput" class="form-label">Currency</label>
-            <input type="text" class="form-control" id="currencyInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="divquarterlyrateInput" class="form-label">Div quarterly rate</label>
-            <input type="number" class="form-control" id="divquarterlyrateInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="divytdInput" class="form-label">Div YTD</label>
-            <input type="number" class="form-control" id="divytdInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="divplnInput" class="form-label">Div PLN</label>
-            <input type="number" class="form-control" id="divplnInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="nextpaymentInput" class="form-label">Next Payment</label>
-            <input type="date" class="form-control" id="nextpaymentInput" required>
-          </div>
-          <div class="mb-3">
-            <label for="prevInput" class="form-label">Prev Payment</label>
-            <input type="date" class="form-control" id="prevInput" required>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="addSubmitButton" type="button" class="btn btn-primary">Add</button>
+  <div class="modal fade text-dark" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add Position</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addForm" onsubmit="return validateForm()">
+            <div class="mb-3">
+              <label for="tickerInputAdd" class="form-label">Ticker</label>
+              <input type="text" class="form-control" id="tickerInputAdd" required>
+            </div>
+            <div class="mb-3">
+              <label for="sharesInput" class="form-label">Shares</label>
+              <input type="number" class="form-control" id="sharesInput" required>
+            </div>
+            <div class="mb-3">
+              <label for="domesticTaxInput" class="form-label">Domestic Tax</label>
+              <input type="number" class="form-control" id="domesticTaxInput" required>
+            </div>
+            <div class="mb-3">
+              <label for="divytdInput" class="form-label">Div YTD</label>
+              <input type="number" class="form-control" id="divytdInput">
+            </div>
+            <div class="mb-3">
+              <label for="divplnInput" class="form-label">Div PLN</label>
+              <input type="number" class="form-control" id="divplnInput">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="addSubmitButton" type="button" class="btn btn-primary" onclick="validateFormAndSubmit()">Add</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 
 <!-- Edit Modal -->
@@ -163,35 +146,19 @@
           </div>
           <div class="mb-3">
             <label for="sharesInputEdit" class="form-label">Shares</label>
-            <input type="number" class="form-control" id="sharesInputEdit" required>
+            <input type="number" class="form-control" id="sharesInputEdit">
           </div>
           <div class="mb-3">
             <label for="domesticTaxInputEdit" class="form-label">Domestic Tax</label>
-            <input type="number" class="form-control" id="domesticTaxInputEdit" required>
-          </div>
-          <div class="mb-3">
-            <label for="currencyInputEdit" class="form-label">Currency</label>
-            <input type="text" class="form-control" id="currencyInputEdit" required>
-          </div>
-          <div class="mb-3">
-            <label for="divquarterlyrateInputEdit" class="form-label">Div Quarterly Rate</label>
-            <input type="number" class="form-control" id="divquarterlyrateInputEdit" required>
+            <input type="number" class="form-control" id="domesticTaxInputEdit" >
           </div>
           <div class="mb-3">
             <label for="divytdInputEdit" class="form-label">Div YTD</label>
-            <input type="number" class="form-control" id="divytdInputEdit" required>
+            <input type="number" class="form-control" id="divytdInputEdit">
           </div>
           <div class="mb-3">
             <label for="divplnInputEdit" class="form-label">Div PLN</label>
-            <input type="number" class="form-control" id="divplnInputEdit" required>
-          </div>
-          <div class="mb-3">
-            <label for="nextpaymentInputEdit" class="form-label">Next Payment</label>
-            <input type="date" class="form-control" id="nextpaymentInputEdit" required>
-          </div>
-          <div class="mb-3">
-            <label for="prevInputEdit" class="form-label">Prev Payment</label>
-            <input type="date" class="form-control" id="prevInputEdit" required>
+            <input type="number" class="form-control" id="divplnInputEdit">
           </div>
         </form>
       </div>
@@ -277,142 +244,139 @@
       });
 
       $('#addSubmitButton').click(function() {
-      var ticker = $('#tickerInputAdd').val();
-      var shares = parseInt($('#sharesInput').val());
-      var domesticTax = parseFloat($('#domesticTaxInput').val());
-      var currencyInput = $('#currencyInput').val();
-      var divquarterlyRate = parseFloat($('#divquarterlyrateInput').val());
-      var divYTD = parseFloat($('#divytdInput').val());
-      var divPLN = parseFloat($('#divplnInput').val());
-      var nextPaymentDate = new Date($('#nextpaymentInput').val());
-      var nextPayment = Math.floor(nextPaymentDate.getTime() / 1000);
-      var prevPaymentDate = new Date($('#prevInput').val());
-      var prev = Math.floor(prevPaymentDate.getTime() / 1000);
+  // Get form input values
+  var ticker = $('#tickerInputAdd').val().trim();
+  var shares = parseInt($('#sharesInput').val());
+  var domesticTax = parseFloat($('#domesticTaxInput').val());
+  var divYTD = parseFloat($('#divytdInput').val());
+  var divPLN = parseFloat($('#divplnInput').val());
 
-      var data = {
-        ticker: ticker,
-        shares: shares,
-        domestictax: domesticTax,
-        currency: currencyInput,
-        divquarterlyrate: divquarterlyRate,
-        divytd: divYTD,
-        divpln: divPLN,
-        nextpayment: nextPayment,
-        prevpayment: prev
+  // Perform form validation
+  if (ticker === '' || isNaN(shares) || isNaN(domesticTax) || isNaN(divYTD) || isNaN(divPLN)) {
+    alert('Please fill in all required fields with valid data.');
+    return; // Prevent further execution
+  }
 
-        // Add other fields as needed for adding positions
-      };
-      $.ajax({
-        url: '/api/update',
-        method: 'POST',
-        data: JSON.stringify(data),
-        contentType: 'application/json',
-        success: function(response) {
-          // Handle success, e.g., refresh the table to show the new data
-          // You can also close the modal if needed
-          $('#addModal').modal('hide');
-          location.reload(); 
-        },
-        error: function(error) {
-          console.error('Error:', error);
-        }
-      });
+  // Prepare data to be sent via AJAX
+  var data = {
+    ticker: ticker,
+    shares: shares,
+    domestictax: domesticTax,
+    divytd: divYTD,
+    divpln: divPLN,
+    // Add other fields as needed for adding positions
+  };
 
-      // Clear form fields
-      $('#tickerInputAdd').val('');
-      $('#sharesInput').val('');
-      $('#domesticTaxInput').val('');
-      $('#currencyInput').val('');
-      $('#divquarterlyrateInput').val('');
-      $('#divytdInput').val('');
-      $('#divplnInput').val('');
-      $('#nextpaymentInput').val('');
-      $('#prevInput').val('');
+  // Make AJAX request to the server
+  $.ajax({
+    url: '/api/update',
+    method: 'POST',
+    data: JSON.stringify(data),
+    contentType: 'application/json',
+    success: function(response) {
+      // Handle success, e.g., refresh the table to show the new data
+      // You can also close the modal if needed
+      $('#addModal').modal('hide');
+      location.reload();
+    },
+    error: function(error) {
+      console.error('Error:', error);
+    }
+  });
 
-    });
+  // Clear form fields
+  $('#tickerInputAdd').val('');
+  $('#sharesInput').val('');
+  $('#domesticTaxInput').val('');
+  $('#divytdInput').val('');
+  $('#divplnInput').val('');
+});
   });
 
   $('#editSubmitButton').click(function() {
-      var ticker = $('#tickerInputEdit').val();
-      var shares = parseInt($('#sharesInputEdit').val());
-      var domesticTax = parseFloat($('#domesticTaxInputEdit').val());
-      var currencyInput = $('#currencyInputEdit').val();
-      var divquarterlyRate = parseFloat($('#divquarterlyrateInputEdit').val());
-      var divYTD = parseFloat($('#divytdInputEdit').val());
-      var divPLN = parseFloat($('#divplnInputEdit').val());
-      var nextPaymentDate = new Date($('#nextpaymentInputEdit').val());
-      var nextPayment = Math.floor(nextPaymentDate.getTime() / 1000);
-      var prevPaymentDate = new Date($('#prevInputEdit').val());
-      var prev = Math.floor(prevPaymentDate.getTime() / 1000);
+  // Get form input values
+  var ticker = $('#tickerInputEdit').val().trim();
+  var shares = parseInt($('#sharesInputEdit').val());
+  var domesticTax = parseFloat($('#domesticTaxInputEdit').val());
+  var divYTD = parseFloat($('#divytdInputEdit').val());
+  var divPLN = parseFloat($('#divplnInputEdit').val());
 
-      var data = {
-        ticker: ticker,
-        shares: shares,
-        domestictax: domesticTax,
-        currency: currencyInput,
-        divquarterlyrate: divquarterlyRate,
-        divytd: divYTD,
-        divpln: divPLN,
-        nextpayment: nextPayment,
-        prevpayment: prev
+  // Perform form validation
+  if (ticker === '') {
+    alert('Please fill in the "Ticker" field.');
+    return; // Prevent further execution
+  }
 
-        // Add other fields as needed for adding positions
-      };
-      $.ajax({
-        url: '/api/update',
-        method: 'PUT',
-        data: JSON.stringify(data),
-        contentType: 'application/json',
-        success: function(response) {
-          // Handle success, e.g., refresh the table to show the new data
-          // You can also close the modal if needed
-          $('#editModal').modal('hide');
-          location.reload(); 
-        },
-        error: function(error) {
-          console.error('Error:', error);
-        }
-      });
+  // Prepare data to be sent via AJAX
+  var data = {
+    ticker: ticker,
+    shares: shares,
+    domestictax: domesticTax,
+    divytd: divYTD,
+    divpln: divPLN,
+    // Add other fields as needed for adding positions
+  };
 
-      // Clear form fields
-      $('#tickerInputEdit').val('');
-      $('#sharesInputEdit').val('');
-      $('#domesticTaxInputEdit').val('');
-      $('#currencyInputEdit').val('');
-      $('#divquarterlyrateInputEdit').val('');
-      $('#divytdInputEdit').val('');
-      $('#divplnInputEdit').val('');
-      $('#nextpaymentInputEdit').val('');
-      $('#prevInputEdit').val('');
+  // Make AJAX request to the server
+  $.ajax({
+    url: '/api/update',
+    method: 'PUT',
+    data: JSON.stringify(data),
+    contentType: 'application/json',
+    success: function(response) {
+      // Handle success, e.g., refresh the table to show the new data
+      // You can also close the modal if needed
+      $('#editModal').modal('hide');
+      location.reload();
+    },
+    error: function(error) {
+      console.error('Error:', error);
+    }
+  });
 
-    });
+  // Clear form fields
+  $('#tickerInputEdit').val('');
+  $('#sharesInputEdit').val('');
+  $('#domesticTaxInputEdit').val('');
+  $('#divytdInputEdit').val('');
+  $('#divplnInputEdit').val('');
+});
 
-      // Add code to handle the delete confirmation
-      $('#deleteSubmitButton').click(function() {
-        var ticker = $('#tickerInputDelete').val(); // Replace with the actual input field IDs
 
-        var data = {
-          ticker: ticker
-        };
+// Add code to handle the delete confirmation
+$('#deleteSubmitButton').click(function() {
+  // Get form input value
+  var ticker = $('#tickerInputDelete').val().trim(); // Replace with the actual input field IDs
 
-        $.ajax({
-          url: '/api/update',
-          method: 'DELETE',
-          data: JSON.stringify(data),
-          contentType: 'application/json',
-          success: function(response) {
-            location.reload();
-          },
-          error: function(error) {
-            console.error('Error:', error);
-          }
-        });
+  // Perform form validation
+  if (ticker === '') {
+    alert('Please fill in the "Ticker" field.');
+    return; // Prevent further execution
+  }
 
-        // Clear form fields
-        $('#tickerInputDelete').val(''); // Replace with the actual input field IDs
+  var data = {
+    ticker: ticker
+  };
 
-        $('#deleteModal').modal('hide');
-      });
+  $.ajax({
+    url: '/api/update',
+    method: 'DELETE',
+    data: JSON.stringify(data),
+    contentType: 'application/json',
+    success: function(response) {
+      location.reload();
+    },
+    error: function(error) {
+      console.error('Error:', error);
+    }
+  });
+
+  // Clear form field
+  $('#tickerInputDelete').val(''); // Replace with the actual input field IDs
+
+  $('#deleteModal').modal('hide');
+});
+
 
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"

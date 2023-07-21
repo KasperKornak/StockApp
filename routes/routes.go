@@ -291,7 +291,6 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toAdd.Currency = strings.ToUpper(toAdd.Currency)
 	toAdd.Ticker = strings.ToUpper(toAdd.Ticker)
 
 	var tempUser models.User
