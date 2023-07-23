@@ -279,14 +279,12 @@ func EditPosition(edit PositionData, username string) PositionData {
 
 	if edit.DivYTD != 0 {
 		finalVersion.DivYTD = edit.DivYTD
-		// add checkng to summary
 	} else {
 		finalVersion.DivYTD = currState.DivYTD
 	}
 
 	if edit.DivPLN != 0 {
 		finalVersion.DivPLN = edit.DivPLN
-		// add to checking summary
 	} else {
 		finalVersion.DivPLN = currState.DivPLN
 	}

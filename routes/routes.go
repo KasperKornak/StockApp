@@ -232,7 +232,7 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 
 	edited := models.EditPosition(toEdit, username)
 	stocks := models.MongoClient.Database("users").Collection(username)
-	filter := bson.M{"stocks.ticker": "TXN"}
+	filter := bson.M{"stocks.ticker": toEdit.Ticker}
 	update := bson.M{"$set": bson.M{"stocks.$": edited}}
 	_, err = stocks.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -292,6 +292,12 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toAdd.Ticker = strings.ToUpper(toAdd.Ticker)
+	isTickerAvailable := models.CheckTickerAvailabilty(toAdd.Ticker)
+
+	if !isTickerAvailable {
+		log.Println("ticker unavailable!")
+		return
+	}
 
 	var tempUser models.User
 	id := models.GetName(r)
@@ -306,4 +312,5 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error updating document: ", err)
 	}
+	models.GetTimestamps(toAdd.Ticker, username)
 }
