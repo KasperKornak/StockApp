@@ -53,6 +53,7 @@ type PositionData struct {
 	DivPLN           float64 `json:"divpln" bson:"divpln"`
 	NextPayment      int     `json:"nextpayment" bson:"nextpayment"`
 	PrevPayment      int     `json:"prevpayment" bson:"prevpayment"`
+	SharesAtExDiv    int     `json:"sharesatexdiv" bson:"sharesatexdiv"`
 }
 
 type Positions struct {
@@ -187,6 +188,7 @@ func RegisterUser(username, password string) error {
 		},
 	}
 	collection.InsertOne(context.TODO(), stockDoc)
+
 	return err
 }
 

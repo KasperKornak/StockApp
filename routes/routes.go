@@ -257,7 +257,7 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	models.TransferDivs(username, toDelete.Ticker)
-
+	toDelete.Ticker = strings.ToUpper(toDelete.Ticker)
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{
 		"ticker": "positions",

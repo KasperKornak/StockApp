@@ -145,7 +145,38 @@ func GetTimestamps(ticker string, username string) {
 
 	_, err := userCollection.UpdateOne(context.Background(), updateFilter, updateDates)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+
+}
+
+func PolygonTickerUpdate(ticker string) (nextpayment int, exdivdate int, cashamount float64) {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("No .env file found")
+	}
+	apiKey := os.Getenv("POLYGON_API")
+	url := fmt.Sprintf("https://api.polygon.io/v3/reference/dividends?ticker=%s&limit=2&apiKey=%s", ticker, apiKey)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var response PolygonJson
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	t, _ := time.Parse("2006-01-02", response.Results[0].PayDate)
+	convertedNextPayment := int(t.Unix())
+	t, _ = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
+	convertedExDivDate := int(t.Unix())
+
+	return convertedNextPayment, convertedExDivDate, response.Results[0].CashAmount
 
 }
