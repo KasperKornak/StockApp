@@ -34,11 +34,32 @@ type PolygonPositionData struct {
 	PrevPayment int     `json:"prevpayment" bson:"prevpayment"`
 	ExDividend  int     `json:"exdividend" bson:"exdividend"`
 	CashAmount  float64 `json:"cashamount" bson:"cashamount"`
+	DivPaid     int     `json:"divpaid" bson:"divpaid"`
 }
 
 type StockUtils struct {
 	Ticker    string                         `json:"ticker" bson:"ticker"`
 	StockList map[string]PolygonPositionData `json:"stockList" bson:"stockList"`
+}
+
+type ForexResponse struct {
+	Adjusted   bool   `json:"adjusted"`
+	QueryCount int    `json:"queryCount"`
+	RequestID  string `json:"request_id"`
+	Results    []struct {
+		T  string  `json:"T"`
+		C  float64 `json:"c"`
+		H  float64 `json:"h"`
+		L  float64 `json:"l"`
+		N  int     `json:"n"`
+		O  float64 `json:"o"`
+		Tt int64   `json:"t"`
+		V  int     `json:"v"`
+		Vw float64 `json:"vw"`
+	} `json:"results"`
+	ResultsCount int    `json:"resultsCount"`
+	Status       string `json:"status"`
+	Ticker       string `json:"ticker"`
 }
 
 func CheckTickerAvailabilty(ticker string) bool {
@@ -103,11 +124,21 @@ func AddTickerToDb(ticker string) {
 	t, _ = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
 	convertedExDivDate := int(t.Unix())
 
+	var divPaidBool int
+	if convertedNextPayment < int(time.Now().Unix()) {
+		// paid out
+		divPaidBool = 1
+	} else {
+		// yet to be paid
+		divPaidBool = 0
+	}
+
 	toSendStock := PolygonPositionData{
 		NextPayment: convertedNextPayment,
 		PrevPayment: convertedPrevPayment,
 		ExDividend:  convertedExDivDate,
 		CashAmount:  response.Results[0].CashAmount,
+		DivPaid:     divPaidBool,
 	}
 
 	collection := MongoClient.Database("users").Collection("stockUtils")
@@ -140,6 +171,8 @@ func GetTimestamps(ticker string, username string) {
 			"stocks.$.divquarterlyrate": stockListDb.StockList[ticker].CashAmount,
 			"stocks.$.nextpayment":      stockListDb.StockList[ticker].NextPayment,
 			"stocks.$.prevpayment":      stockListDb.StockList[ticker].PrevPayment,
+			"stocks.$.divpaid":          stockListDb.StockList[ticker].DivPaid,
+			"stocks.$.exdivdate":        stockListDb.StockList[ticker].ExDividend,
 		},
 	}
 

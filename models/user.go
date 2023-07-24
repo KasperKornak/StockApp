@@ -54,6 +54,8 @@ type PositionData struct {
 	NextPayment      int     `json:"nextpayment" bson:"nextpayment"`
 	PrevPayment      int     `json:"prevpayment" bson:"prevpayment"`
 	SharesAtExDiv    int     `json:"sharesatexdiv" bson:"sharesatexdiv"`
+	DivPaid          int     `json:"divpaid" bson:"divpaid"`
+	ExDivDate        int     `json:"exdivdate" bson:"exdivdate"`
 }
 
 type Positions struct {
