@@ -70,6 +70,19 @@ func CheckTickerAvailabilty(ticker string) bool {
 	apiKey := os.Getenv("POLYGON_API")
 	url := fmt.Sprintf("https://api.polygon.io/v3/reference/dividends?ticker=%s&limit=2&apiKey=%s", ticker, apiKey)
 
+	var currStocksInDb StockUtils
+
+	stockDb := MongoClient.Database("users").Collection("stockUtils")
+	filter := bson.M{"ticker": "AVAILABLE_STOCKS"}
+	_ = stockDb.FindOne(context.TODO(), filter).Decode(&currStocksInDb)
+
+	for tickerIter := range currStocksInDb.StockList {
+		if tickerIter == ticker {
+			tickerCheck = true
+			return tickerCheck
+		}
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)

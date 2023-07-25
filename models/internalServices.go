@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -33,6 +35,7 @@ func RetrieveUsers() UsernamesDocument {
 
 func UpdateUserList() {
 	currUserList := RetrieveUsers()
+	currentTime := int(time.Now().Unix())
 	currAvailableStocks := RetrieveAvailableStocks()
 	for _, username := range currUserList.Usernames {
 		currUserCollection := MongoClient.Database("users").Collection(username)
@@ -43,12 +46,15 @@ func UpdateUserList() {
 
 		for _, position := range currUserStocks.Stocks {
 			for availableStockTicker, availableStock := range currAvailableStocks.StockList {
-				if position.Ticker == availableStockTicker {
+				if (position.Ticker == availableStockTicker) && (position.Ticker != "DELETED_SUM") {
 					if position.NextPayment != availableStock.NextPayment {
 						position.NextPayment = availableStock.NextPayment
 						position.PrevPayment = availableStock.PrevPayment
 						position.DivPaid = availableStock.DivPaid
 						position.ExDivDate = availableStock.ExDividend
+					}
+					if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
+						position.SharesAtExDiv = position.Shares
 					}
 
 				}
@@ -123,7 +129,6 @@ func UpdateStockDb() {
 func CalculateDividends() {
 	userList := RetrieveUsers()
 	currencyPair := GetForex()
-	i := 1
 	for _, username := range userList.Usernames {
 		currUserCollection := MongoClient.Database("users").Collection(username)
 		var currUserStocks Positions
@@ -132,32 +137,30 @@ func CalculateDividends() {
 		_ = currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
 		var months initMongoMonths
 		_ = currUserCollection.FindOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}).Decode(&months)
-		for _, position := range currUserStocks.Stocks {
-			if (position.DivPaid == 0) && (position.NextPayment <= int(time.Now().Unix())) {
-				position.DivYTD = float64(position.SharesAtExDiv)*position.DivQuarterlyRate + position.DivYTD
-				position.DivPLN = position.DivQuarterlyRate * float64(position.SharesAtExDiv) * currencyPair * float64(position.Domestictax) / 100.0
-				for i, month := range months.Months {
+
+		for i, position := range currUserStocks.Stocks {
+			if (position.Ticker != "DELETED_SUM") && (position.DivPaid == 0) && (position.NextPayment <= int(time.Now().Unix())) {
+
+				currUserStocks.Stocks[i].DivYTD = float64(position.SharesAtExDiv)*position.DivQuarterlyRate + position.DivYTD
+				currUserStocks.Stocks[i].DivPLN = position.DivQuarterlyRate * float64(position.SharesAtExDiv) * currencyPair * float64(position.Domestictax) / 100.0
+				currUserStocks.Stocks[i].DivPaid = 1
+				for j, month := range months.Months {
 					if month.Name[:3] == currentMonth.String()[:3] {
-						months.Months[i].Value = position.DivYTD
+						months.Months[j].Value = months.Months[j].Value + float64(position.SharesAtExDiv)*position.DivQuarterlyRate
 						break
 					}
 				}
 			}
+		}
 
-			if i%5 == 0 {
-				time.Sleep(60 * time.Second)
-				i = 0
-			}
-		}
-		update := bson.M{
-			"$set": bson.M{
-				"stocks": currUserStocks.Stocks,
-			},
-		}
+		// Update the stocks array in the document
+		update := bson.M{"$set": bson.M{"stocks": currUserStocks.Stocks}}
 		_, err := currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
 		if err != nil {
 			log.Println(err)
 		}
+
+		// Update the MONTH_SUMARY document with modified months
 		update = bson.M{"$set": months}
 		_, err = currUserCollection.UpdateOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}, update)
 		if err != nil {
@@ -167,11 +170,11 @@ func CalculateDividends() {
 }
 
 func GetForex() float64 {
-	// if err := godotenv.Load(); err != nil {
-	// 	fmt.Println("No .env file found")
-	// }
-	// apiKey := os.Getenv("POLYGON_API_KEY")
-	url := "https://api.polygon.io/v2/aggs/ticker/C:USDPLN/prev?adjusted=true&apiKey=GBU7kTsNoJM2iUN7iMzOZFnyPxz3Ty_a"
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("No .env file found")
+	}
+	apiKey := os.Getenv("POLYGON_API")
+	url := fmt.Sprintf("https://api.polygon.io/v2/aggs/ticker/%s/prev?adjusted=true&apiKey=%s", "C:USDPLN", apiKey)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -191,4 +194,11 @@ func GetForex() float64 {
 	exRate := response.Results[0].C
 
 	return exRate
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }

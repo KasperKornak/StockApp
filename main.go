@@ -16,11 +16,14 @@ func main() {
 	r := routes.NewRouter()
 	http.Handle("/", r)
 	c := cron.New()
-	c.AddFunc("00 16 * * *", func() {
+	c.AddFunc("18 23 * * *", func() {
 		log.Println("started")
 		models.CalculateDividends()
+		log.Println("calculating divs finished")
 		models.UpdateStockDb()
+		log.Println("updating stock db finished")
 		models.UpdateUserList()
+		log.Println("updating user list finished")
 		log.Println("ended")
 	})
 
