@@ -90,5 +90,6 @@ jobs:
         script: |
             sudo chmod +x ~/main 
             sudo chmod 711 ~/main 
-            nohup ~/main > app.log 2>&1 &
+            sudo nohup ~/main > app.log 2>&1 &
+
 
