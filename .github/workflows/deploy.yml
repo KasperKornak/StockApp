@@ -31,9 +31,7 @@ jobs:
 
     - name: Build
       run: |
-        cd cmd
         go build main.go
-        cd ..
 
     - name: Copy binary to EC2
       uses: appleboy/scp-action@master
@@ -41,26 +39,17 @@ jobs:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "cmd/main"
-        target: "main"
+        source: "./main"
+        target: "~"
 
-    - name: Copy python Slack file to EC2
+    - name: Copy HTML files
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "pkg/slackUtils/SlackBot.py"
-        target: "main/"
-    
-    - name: Copy template file to EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "pkg/template/table.tmpl"
-        target: "main/"
+        source: "templates/"
+        target: "~/templates/"
 
     - name: Create .env file in cmd directory
       uses: appleboy/ssh-action@master
@@ -69,29 +58,9 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
           script: |
-            echo "${BACKEND_VARS}" > main/cmd/.env
-            chmod 711 main/cmd/.env
+            echo "${BACKEND_VARS}" > ~/.env
+            chmod 711 ~/.env
           envs: BACKEND_VARS
-
-    - name: Create .env file in slackUtils directory
-      uses: appleboy/ssh-action@master
-      with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-          script: |
-            echo "${BACKEND_VARS}" > main/pkg/slackUtils/.env
-            chmod 711 main/pkg/slackUtils/.env
-          envs: BACKEND_VARS
-            
-    - name: Copy requirements.txt file to EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        source: "pkg/slackUtils/requirements.txt"
-        target: "main/"    
 
     - name: Kill existing backend process
       uses: appleboy/ssh-action@master
@@ -110,19 +79,7 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         script: |
-            sudo chmod +x main/cmd/main 
-            sudo chmod 711 main/cmd/main 
-            cd main/cmd 
-            nohup ./main > app.log 2>&1 &
+            sudo chmod +x ~/main 
+            sudo chmod 711 ~/main 
+            nohup ~/main > app.log 2>&1 &
 
-    - name: Run slackBot app on EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.AWS_HOST }}
-        username: ${{ secrets.AWS_USERNAME }}
-        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-        script: |
-            sudo chmod 711 main/pkg/slackUtils/SlackBot.py
-            cd ~/main/pkg/slackUtils
-            pip3 install -r requirements.txt
-            nohup python3 SlackBot.py > SlackBot.log 2>&1 &

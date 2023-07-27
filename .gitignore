@@ -7,7 +7,6 @@
 *.dll
 *.so
 *.dylib
-*.env
 
 # Test binary, built with `go test -c`
 *.test
@@ -20,7 +19,5 @@
 
 # Go workspace file
 go.work
-stocks.json
-
-cmd/.env
+**/.env
 StockAppKeyPair.pem
