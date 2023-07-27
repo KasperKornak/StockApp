@@ -51,6 +51,15 @@ jobs:
         source: "templates/"
         target: "~"
 
+    - name: Copy static files
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+        source: "static/"
+        target: "~"
+
     - name: Create .env file in cmd directory
       uses: appleboy/ssh-action@master
       with:
