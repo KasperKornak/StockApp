@@ -135,7 +135,7 @@ func CalculateDividends() {
 		currentMonth := time.Now().Month()
 		curUserFilter := bson.M{"ticker": "positions"}
 		_ = currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
-		var months initMongoMonths
+		var months InitMongoMonths
 		_ = currUserCollection.FindOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}).Decode(&months)
 
 		for i, position := range currUserStocks.Stocks {
@@ -166,6 +166,7 @@ func CalculateDividends() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		UpdateSummary(username)
 	}
 }
 
@@ -201,4 +202,33 @@ func Abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func UpdateSummary(username string) {
+	collection := MongoClient.Database("users").Collection(username)
+	yearFilter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
+	positionFilter := bson.M{"ticker": "positions"}
+	var summary initYearSummary
+	var positions Positions
+
+	_ = collection.FindOne(context.TODO(), yearFilter).Decode(&summary)
+	_ = collection.FindOne(context.TODO(), positionFilter).Decode(&positions)
+
+	divYtd := 0.0
+	divPln := 0.0
+
+	for _, position := range positions.Stocks {
+		divPln += position.DivPLN
+		divYtd += position.DivYTD
+	}
+
+	// Update the summary struct with divPln and divYtd values
+	summary.DividendTax = divPln
+	summary.DividendsYTD = divYtd
+
+	update := bson.M{"$set": summary}
+	_, err := collection.UpdateOne(context.TODO(), yearFilter, update)
+	if err != nil {
+		log.Println(err)
+	}
 }

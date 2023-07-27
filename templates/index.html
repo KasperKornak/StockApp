@@ -46,23 +46,95 @@
     </div>
   </nav>
 
-  <!-- Showcase -->
-  <section class="bg-dark text-light p-5 p-lg-3 pt-lg-5 text-center text-sm-start showcase custom-section">
-    <div class="container-fluid h-100">
-		<div class="row h-100 align-items-center">
-			<div class="col">
-				<h1 class="text-center">Hello <span class="text-warning">{{ .Username }}</span>!</h1>
-				<h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ .DividendTax }}</span> PLN</h2>
-				<h2 class="text-center">Dividends YTD: <span class="text-warning">{{ .DividendsYTD }}</span> USD</h2>
-			</div>
-			<div class="col">
-				<div id="chartContainer">
-					<canvas id="chart"></canvas>
-				</div>
-			</div>
-		</div>
+<!-- Showcase -->
+<section class="bg-dark text-light p-5 p-lg-3 pt-lg-5 text-center text-sm-start showcase custom-section">
+  <div class="container-fluid h-100">
+    <div class="row h-100 align-items-center">
+      <div class="col">
+        <h1 class="text-center">Hello <span class="text-warning">{{ .Username }}</span>!</h1>
+        <h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ .DividendTax }}</span> PLN</h2>
+        <h2 class="text-center">Dividends YTD: <span class="text-warning">{{ .DividendsYTD }}</span> USD</h2>
+        <div class="text-center">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
+          Edit Month Data
+        </button>
+      </div>
+      </div>
+      <div class="col">
+        <div id="chartContainer">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
+
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Month Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="mb-3">
+            <label for="janValue" class="form-label">January Value</label>
+            <input type="text" class="form-control" id="janValue" name="janValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="febValue" class="form-label">February Value</label>
+            <input type="text" class="form-control" id="febValue" name="febValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="marValue" class="form-label">March Value</label>
+            <input type="text" class="form-control" id="marValue" name="marValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="aprValue" class="form-label">April Value</label>
+            <input type="text" class="form-control" id="aprValue" name="aprValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="mayValue" class="form-label">May Value</label>
+            <input type="text" class="form-control" id="mayValue" name="mayValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="junValue" class="form-label">June Value</label>
+            <input type="text" class="form-control" id="junValue" name="junValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="julValue" class="form-label">July Value</label>
+            <input type="text" class="form-control" id="julValue" name="julValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="augValue" class="form-label">August Value</label>
+            <input type="text" class="form-control" id="augValue" name="augValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="sepValue" class="form-label">September Value</label>
+            <input type="text" class="form-control" id="sepValue" name="sepValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="octValue" class="form-label">October Value</label>
+            <input type="text" class="form-control" id="octValue" name="octValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="novValue" class="form-label">November Value</label>
+            <input type="text" class="form-control" id="novValue" name="novValue" required>
+          </div>
+          <div class="mb-3">
+            <label for="decValue" class="form-label">December Value</label>
+            <input type="text" class="form-control" id="decValue" name="decValue" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Footer -->
   <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
@@ -129,5 +201,100 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
   integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
   crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Attach an event listener to the form submission
+      document.getElementById("editForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent form submission and page reload
+  
+        // Collect data from the form
+        const year = new Date().getFullYear(); // Assuming the year is the current year
+        const ticker = "MONTH_SUMARY"; // Replace with the appropriate value
+  
+        const months = [
+          {
+            name: "Jan",
+            value: parseFloat(document.getElementById("janValue").value),
+          },
+          {
+            name: "Feb",
+            value: parseFloat(document.getElementById("febValue").value),
+          },
+          {
+            name: "Mar",
+            value: parseFloat(document.getElementById("marValue").value),
+          },
+          {
+            name: "Apr",
+            value: parseFloat(document.getElementById("aprValue").value),
+          },
+          {
+            name: "May",
+            value: parseFloat(document.getElementById("mayValue").value),
+          },
+          {
+            name: "Jun",
+            value: parseFloat(document.getElementById("junValue").value),
+          },
+          {
+            name: "Jul",
+            value: parseFloat(document.getElementById("julValue").value),
+          },
+          {
+            name: "Aug",
+            value: parseFloat(document.getElementById("augValue").value),
+          },
+          {
+            name: "Sep",
+            value: parseFloat(document.getElementById("sepValue").value),
+          },
+          {
+            name: "Oct",
+            value: parseFloat(document.getElementById("octValue").value),
+          },
+          {
+            name: "Nov",
+            value: parseFloat(document.getElementById("novValue").value),
+          },
+          {
+            name: "Dec",
+            value: parseFloat(document.getElementById("decValue").value),
+          },
+        ];
+  
+        // Prepare the payload matching the required structure
+        const payload = {
+          year: year,
+          ticker: ticker,
+          months: months,
+        };
+  
+        // Send the POST request using fetch API
+        fetch("/api/month", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Data sent successfully:", data);
+            // Optionally, you can show a success message or perform other actions here.
+          })
+          .catch((error) => {
+            console.error("Error sending data:", error);
+            // Handle errors, show error messages, etc.
+          });
+      });
+    });
+  </script>
+  
+  
 </body>
 </html>

@@ -32,15 +32,30 @@ type initYearSummary struct {
 	Ticker       string  `bson:"ticker"`
 }
 
-type initMonthData struct {
+type MonthData struct {
+	Jan float64 `json:"Jan"`
+	Feb float64 `json:"Feb"`
+	Mar float64 `json:"Mar"`
+	Apr float64 `json:"Apr"`
+	May float64 `json:"May"`
+	Jun float64 `json:"Jun"`
+	Jul float64 `json:"Jul"`
+	Aug float64 `json:"Aug"`
+	Sep float64 `json:"Sep"`
+	Oct float64 `json:"Oct"`
+	Nov float64 `json:"Nov"`
+	Dec float64 `json:"Dec"`
+}
+
+type InitMonthData struct {
 	Name  string  `bson:"name"`
 	Value float64 `bson:"value"`
 }
 
-type initMongoMonths struct {
+type InitMongoMonths struct {
 	Year   int             `bson:"year"`
 	Ticker string          `bson:"ticker"`
-	Months []initMonthData `bson:"months"`
+	Months []InitMonthData `bson:"months"`
 }
 
 type PositionData struct {
@@ -152,7 +167,7 @@ func RegisterUser(username, password string) error {
 	collection.InsertOne(context.TODO(), yearSummary)
 
 	// Create the document
-	months := []initMonthData{
+	months := []InitMonthData{
 		{Name: "Jan", Value: 0.0},
 		{Name: "Feb", Value: 0.0},
 		{Name: "Mar", Value: 0.0},
@@ -167,7 +182,7 @@ func RegisterUser(username, password string) error {
 		{Name: "Dec", Value: 0.0},
 	}
 
-	doc := initMongoMonths{
+	doc := InitMongoMonths{
 		Year:   time.Now().Year(),
 		Ticker: "MONTH_SUMARY",
 		Months: months,
@@ -237,7 +252,7 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 		Stocks []PositionData `bson:"stocks"`
 	}
 
-	filter := bson.M{"stocks": bson.M{"$elemMatch": bson.M{"ticker": ticker}}, "ticker": "positions"}
+	filter := bson.M{"ticker": "positions", "stocks.ticker": ticker}
 	err := stocks.FindOne(context.TODO(), filter).Decode(&stockData)
 	if err != nil {
 		log.Println(err)
@@ -246,6 +261,7 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 
 	for _, stock := range stockData.Stocks {
 		if stock.Ticker == ticker {
+			log.Println(stock)
 			return stock
 		}
 	}
@@ -257,53 +273,60 @@ func EditPosition(edit PositionData, username string) PositionData {
 	currState := ModelGetStockByTicker(edit.Ticker, username)
 	finalVersion := PositionData{}
 	finalVersion.Ticker = edit.Ticker
-	if edit.Currency != "" {
-		finalVersion.Currency = edit.Currency
-	} else {
-		finalVersion.Currency = currState.Currency
-	}
 
-	if edit.Shares != 0 {
-		finalVersion.Shares = edit.Shares
-	} else {
-		finalVersion.Shares = currState.Shares
-	}
-
-	if edit.Domestictax != 0 {
-		finalVersion.Domestictax = edit.Domestictax
-	} else {
-		finalVersion.Domestictax = currState.Domestictax
-	}
-
-	if edit.DivQuarterlyRate != 0 {
-		finalVersion.DivQuarterlyRate = edit.DivQuarterlyRate
-	} else {
-		finalVersion.DivQuarterlyRate = currState.DivQuarterlyRate
-	}
-
-	if edit.DivYTD != 0 {
+	if edit.Ticker == "DELETED_SUM" {
+		finalVersion.DivPLN = edit.DivPLN
 		finalVersion.DivYTD = edit.DivYTD
 	} else {
-		finalVersion.DivYTD = currState.DivYTD
+		if edit.Currency != "" {
+			finalVersion.Currency = edit.Currency
+		} else {
+			finalVersion.Currency = currState.Currency
+		}
+
+		if edit.Shares != 0 {
+			finalVersion.Shares = edit.Shares
+		} else {
+			finalVersion.Shares = currState.Shares
+		}
+
+		if edit.Domestictax != 0 {
+			finalVersion.Domestictax = edit.Domestictax
+		} else {
+			finalVersion.Domestictax = currState.Domestictax
+		}
+
+		if edit.DivQuarterlyRate != 0 {
+			finalVersion.DivQuarterlyRate = edit.DivQuarterlyRate
+		} else {
+			finalVersion.DivQuarterlyRate = currState.DivQuarterlyRate
+		}
+
+		if edit.DivYTD != 0 {
+			finalVersion.DivYTD = edit.DivYTD
+		} else {
+			finalVersion.DivYTD = currState.DivYTD
+		}
+
+		if edit.DivPLN != 0 {
+			finalVersion.DivPLN = edit.DivPLN
+		} else {
+			finalVersion.DivPLN = currState.DivPLN
+		}
+
+		if edit.NextPayment != 0 {
+			finalVersion.NextPayment = edit.NextPayment
+		} else {
+			finalVersion.NextPayment = currState.NextPayment
+		}
+
+		if edit.PrevPayment != 0 {
+			finalVersion.PrevPayment = edit.PrevPayment
+		} else {
+			finalVersion.PrevPayment = currState.PrevPayment
+		}
 	}
 
-	if edit.DivPLN != 0 {
-		finalVersion.DivPLN = edit.DivPLN
-	} else {
-		finalVersion.DivPLN = currState.DivPLN
-	}
-
-	if edit.NextPayment != 0 {
-		finalVersion.NextPayment = edit.NextPayment
-	} else {
-		finalVersion.NextPayment = currState.NextPayment
-	}
-
-	if edit.PrevPayment != 0 {
-		finalVersion.PrevPayment = edit.PrevPayment
-	} else {
-		finalVersion.PrevPayment = currState.PrevPayment
-	}
-
+	log.Println(finalVersion)
 	return finalVersion
 }

@@ -68,6 +68,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/api/update", updateEditHandler).Methods("PUT")
 	r.HandleFunc("/api/update", updateAddHandler).Methods("POST")
 	r.HandleFunc("/api/update", updateDeleteHandler).Methods("DELETE")
+	r.HandleFunc("/api/month", monthSummaryUpdateHandler).Methods("POST")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	return r
@@ -229,6 +230,7 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	username, _ := tempUser.GetUsername()
 	toEdit.Currency = strings.ToUpper(toEdit.Currency)
 	toEdit.Ticker = strings.ToUpper(toEdit.Ticker)
+	log.Println(toEdit.Ticker)
 
 	edited := models.EditPosition(toEdit, username)
 	stocks := models.MongoClient.Database("users").Collection(username)
@@ -238,6 +240,7 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error updating document:", err)
 	}
+	models.UpdateSummary(username)
 }
 
 func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -313,4 +316,27 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error updating document: ", err)
 	}
 	models.GetTimestamps(toAdd.Ticker, username)
+}
+
+func monthSummaryUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	var tempUser models.User
+	var currMonth, editedMonthValues models.InitMongoMonths
+	id := models.GetName(r)
+	tempUser.Id = id
+	username, _ := tempUser.GetUsername()
+	stocks := models.MongoClient.Database("users").Collection(username)
+	monthFilter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
+
+	_ = stocks.FindOne(context.TODO(), monthFilter).Decode(&currMonth)
+	err := json.NewDecoder(r.Body).Decode(&editedMonthValues)
+	if err != nil {
+		log.Println(err)
+	}
+
+	updateDoc := bson.M{"$set": editedMonthValues}
+
+	_, err = stocks.UpdateOne(context.TODO(), monthFilter, updateDoc)
+	if err != nil {
+		log.Println(err)
+	}
 }
