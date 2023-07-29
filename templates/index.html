@@ -52,8 +52,8 @@
     <div class="row h-100 align-items-center">
       <div class="col">
         <h1 class="text-center">Hello <span class="text-warning">{{ .Username }}</span>!</h1>
-        <h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ .DividendTax }}</span> PLN</h2>
-        <h2 class="text-center">Dividends YTD: <span class="text-warning">{{ .DividendsYTD }}</span> USD</h2>
+        <h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ printf "%.2f" .DividendTax }}</span> PLN</h2>
+        <h2 class="text-center">Dividends YTD: <span class="text-warning">{{ printf "%.2f"  .DividendsYTD }}</span> USD</h2>
         <div class="text-center">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
           Edit Month Data

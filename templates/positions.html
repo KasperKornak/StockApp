@@ -243,8 +243,8 @@
               $('<td>').text(position.shares).appendTo(row);
               $('<td>').text(position.domestictax).appendTo(row);
               $('<td>').text(position.divquarterlyrate).appendTo(row);
-              $('<td>').text(position.divytd).appendTo(row);
-              $('<td>').text(position.divpln).appendTo(row);
+              $('<td>').text(position.divytd.toFixed(2)).appendTo(row);
+              $('<td>').text(position.divpln.toFixed(2)).appendTo(row);
               $('<td>').text(formatDate(position.nextpayment)).appendTo(row);
               $('<td>').text(formatDate(position.prevpayment)).appendTo(row);
 
