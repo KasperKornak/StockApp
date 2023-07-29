@@ -315,6 +315,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error updating document: ", err)
 	}
+	models.UpdateSummary(username)
 	models.GetTimestamps(toAdd.Ticker, username)
 }
 
