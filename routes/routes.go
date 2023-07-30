@@ -69,6 +69,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/api/update", middleware.AuthRequired(updateAddHandler)).Methods("POST")
 	r.HandleFunc("/api/update", middleware.AuthRequired(updateDeleteHandler)).Methods("DELETE")
 	r.HandleFunc("/api/month", middleware.AuthRequired(monthSummaryUpdateHandler)).Methods("POST")
+	r.HandleFunc("/docs", tutorialHandler).Methods("GET")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	return r
@@ -315,6 +316,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error updating document: ", err)
 	}
+	models.UpdateSummary(username)
 	models.GetTimestamps(toAdd.Ticker, username)
 }
 
@@ -339,4 +341,8 @@ func monthSummaryUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func tutorialHandler(w http.ResponseWriter, r *http.Request) {
+	utils.ExecuteTemplate(w, "docs.html", nil)
 }

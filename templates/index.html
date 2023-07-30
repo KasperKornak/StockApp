@@ -22,6 +22,18 @@
       height: calc(100% - 56px);
       width: 95vw;
     }
+
+    .footer-1 {
+      line-height: 0.1;
+    }
+
+
+#footer {
+  height: 20px;
+  background: red; 
+  color: white;
+}
+
   </style>
 </head>
 <body>
@@ -36,12 +48,18 @@
       <div class="collapse navbar-collapse" id="navmenu">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a href="/positions" class="nav-link">Positions</a>
-          </li>
-          <li class="nav-item">
-            <a href="/logout" class="nav-link">Logout</a>
-          </li>
-        </ul>
+              <a href="/" class="nav-link">Home</a>
+            </li>
+        <li class="nav-item">
+          <a href="/positions" class="nav-link">Positions</a>
+        </li>
+        <li class="nav-item">
+          <a href="/docs" class="nav-link">Docs</a>
+        </li>
+        <li class="nav-item">
+          <a href="/logout" class="nav-link">Logout</a>
+        </li>
+      </ul>
       </div>
     </div>
   </nav>
@@ -52,8 +70,8 @@
     <div class="row h-100 align-items-center">
       <div class="col">
         <h1 class="text-center">Hello <span class="text-warning">{{ .Username }}</span>!</h1>
-        <h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ .DividendTax }}</span> PLN</h2>
-        <h2 class="text-center">Dividends YTD: <span class="text-warning">{{ .DividendsYTD }}</span> USD</h2>
+        <h2 class="text-center">Dividend Tax to be paid: <span class="text-warning">{{ printf "%.2f" .DividendTax }}</span> PLN</h2>
+        <h2 class="text-center">Dividends YTD: <span class="text-warning">{{ printf "%.2f"  .DividendsYTD }}</span> USD</h2>
         <div class="text-center">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
           Edit Month Data
@@ -128,7 +146,10 @@
             <label for="decValue" class="form-label">December Value</label>
             <input type="text" class="form-control" id="decValue" name="decValue" required>
           </div>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
         </form>
       </div>
     </div>
@@ -137,11 +158,12 @@
 
 
   <!-- Footer -->
-  <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
-    <div class="container">
-      <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
-    </div>
+  <div id="footer">
+    <footer class="pt-0 p-sm-8 bg-dark text-white text-center position-relative footer">
+      <p class="footer-1">Copyright &copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+      <p>Alpha version. Calculations are for illustrative purposes only. The service owner is not responsible for errors resulting from the use of the application.</p>
   </footer>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
@@ -285,12 +307,14 @@
           })
           .then((data) => {
             console.log("Data sent successfully:", data);
-            // Optionally, you can show a success message or perform other actions here.
           })
           .catch((error) => {
             console.error("Error sending data:", error);
             // Handle errors, show error messages, etc.
           });
+          const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+            editModal.hide();
+            location.reload();
       });
     });
   </script>

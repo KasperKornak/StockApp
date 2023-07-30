@@ -206,6 +206,18 @@ func RegisterUser(username, password string) error {
 	}
 	collection.InsertOne(context.TODO(), stockDoc)
 
+	utils := MongoClient.Database("users").Collection("stockUtils")
+	userListFilter := bson.M{"ticker": "ALL_USERNAMES"}
+	var userList UsernamesDocument
+	_ = utils.FindOne(context.TODO(), userListFilter).Decode(&userList)
+	if err != nil {
+		log.Println(err)
+	}
+
+	userList.Usernames = append(userList.Usernames, username)
+	_, err = utils.UpdateOne(context.TODO(), userListFilter, bson.M{"$set": bson.M{"usernames": userList.Usernames}})
+	log.Println(userList.Usernames)
+
 	return err
 }
 

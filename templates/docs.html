@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💸 DivTax - Home</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/index.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    .custom-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .footer-1 {
+      line-height: 0.1;
+    }
+
+
+#footer {
+  height: 20px;
+  background: red; 
+  color: white;
+}
+  </style>
+</head>
+<body>
+	
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 fixed-top">
+    <div class="container">
+      <a href="/" class="navbar-brand">💸 Div<span class="text-warning">Tax</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navmenu">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a href="/" class="nav-link">Home</a>
+              </li>
+          <li class="nav-item">
+            <a href="/positions" class="nav-link">Positions</a>
+          </li>
+          <li class="nav-item">
+            <a href="/docs" class="nav-link">Docs</a>
+          </li>
+          <li class="nav-item">
+            <a href="/logout" class="nav-link">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+<!-- Showcase -->
+<section class="bg-dark text-light p-5 p-lg-3 pt-lg-5 text-center text-sm-start showcase custom-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col">
+          <h1 class="display-4">DivTax docs</h1>
+          <p class="lead">DivTax is a platform meant to automatically calculate dividend tax received from US-registered companies (or any company which has ADR/ADS available). </p>
+          <h2>Table of content</h2>
+          <ul>
+            <li><a href="#register" target="_parent">Registering</a></li>
+            <li><a href="#homepage" target="_parent">Homepage</a></li>
+            <li><a href="#positions" target="_parent">Positions</a></li>
+            <li><a href="#adding-position" target="_parent">Adding positions</a></li>
+            <li><a href="#edit-position" target="_parent">Editing positions</a></li>
+            <li><a href="#delete-position" target="_parent">Deleting positions</a></li>
+            <li><a href="#limitations" target="_parent">Limitations</a></li>
+            <li><a href="#further-plans" target="_parent">Further plans</a></li>
+            <li><a href="#contact" target="_parent">Contact</a></li>
+        </ul>
+          <hr>
+          <section id="register">
+          <h2>Registering account</h2>
+          <p>To set up an account, head to <pre><code class="language-bash">http://ec2-3-92-203-236.compute-1.amazonaws.com/register</code></pre> 
+            hit "register" button and insert login and password. Currently, no email verification service is up, however there are plans to add this feature 
+            in the future as user base grows. Additionally, the website address will be changed once all necessary bug fixes and features will be added. The same goes for SSL certificate.</p>
+          </section>
+          <section id="homepage">
+            <h2>Homepage</h2>
+          <p>After registering successfully, you'll be redirected to login website. Fill in username and password to access the platform. Upon valid authentication,
+            you will be again redirected - this time to home page:
+            <div class="col">
+              <div class="text-center">
+                <img src="static/img/initial-homepage.png" alt="initial homepage" style="max-width: 100%; height: auto;border: 5px solid white;">
+              </div>
+          </p>
+          <p> As you can see, both <b>Dividend Tax to be paid</b> and <b>Dividends YTD</b> fields are initialized with 0 values. Those values will change under this circumstances:</p>
+          <ul>
+            <li>Adding/Editing a position</li>
+            <li>Dividend is paid out</li>
+          </ul>
+          <p>At the bottom of the image above, there is an empty bar chart. This visualizes the dividends received in each month in <b>USD</b>. 
+            Again, data for this chart will be updated automatically, however you can always edit your data there. Let's suppose that, you've started using DivTax in September.
+            As of now, platform doesn't enable users to automatically fill in data from previous months, so you will have to click the <b>Edit Month Data</b> button and insert each month's data.
+            If you didn't receive any dividend in some month, you should input <b>0</b> value. After submitting the changes it should look something like this:</p>
+            <div class="text-center">
+              <img src="static/img/initial-webpage-months-edited.png" alt="initial homepage month edited" style="max-width: 100%; height: auto;border: 5px solid white;">
+            </div>
+          <p></p>
+          <p>Remember that you will usually have to insert data here once (if you don't make any typos). <b>After that everything will be calculated automatically.</b></p>
+        </section>
+        <section id="positions">
+          <h2>Positions page</h2>
+          <p>The next step is to add your positions. Hit the <b>Positions</b> button at the top-right corner of the page. you will be redirected to the following page:</p>
+          <div class="text-center">
+            <img src="static/img/initial-positions-page.png" alt="initial positions" style="max-width: 100%; height: auto;border: 5px solid white;">
+          </div>
+          <p></p>
+          <p>This page allows you to add, edit or delete existing positions, as well as displays some basic info about your holdings. 
+            You might have seen the <b>DELETED_SUM</b> position is already in your portfolio. Don't worry - this position stores data about dividends which you received,
+            but you no longer have a position in the company. You can finf more about that below.</p>
+          </section>
+          <section id="adding-position">
+          <h2>Adding a position</h2>
+          <p>Now, let's create first position in portfolio. We'd like to add 50 shares of Apple. To do that, simply hit the <b>Add Position</b> button, then
+            the following form will appear:</p>
+            <div class="text-center">
+              <img src="static/img/add-position.png" alt="add form" style="max-width: 100%; height: auto;border: 5px solid white;">
+            </div>  
+            <p></p>
+            <p>Now let's go over the fields required to be filled.</p>
+            <ol>
+              <li>Ticker</li>
+              <p>Pretty straightforward - the ticker of the company you would like to add your portfolio. In our case it will be <b>AAPL</b>.</p>
+              <li>Shares</li>
+              <p>Number of shares we would like to add. In our case it'll be <b>50</b>.</p>
+              <li>Domestic Tax</li>
+              <p>Number in percentages of the tax rate for the position in Poland. For instance, if you have filled in W-8BEN form and privilages
+                 given by this form were granted to you, in 95% of situations your tax rate will be <b>4 per cent</b>. However, if your broker doesn't allow you to fill
+                W-8BEN or effective tax rate is different you can obviously fill in <b>Domestic Tax</b> field however you like. In our case, the <b>Domestic Tax</b> field will be filled
+              by <b>4</b> value representing 4% tax to be paid in Poland.</p>
+              <li>Div YTD</li>
+              <p>Dividends year to date received from given company. Let's say this year so far, Apple paid us <b>19.34USD</b>.</p>
+              <li>Div PLN</li>
+              <p>Dividend tax in PLN to be paid this year. For instance, let's say Apple paid us dividends in two tranches:</p>
+              <ol>
+                <li>First quarter - 10.03.2023 - 8.34USD</li>
+                <p>So the dividend tax to be paid for the first quarter is: <b>8.34 * 0.04 * 4.4356 = 1.48PLN</b>, where the last element from the formula is an exchange rate from NBP tables.</p>
+                <li>Second quarter - 12.07.2023 - 11.00USD</li>
+                <p>So the dividend tax to be paid for the second quarter is: <b>11.00 * 0.04 * 4.0374 = 1.78PLN</b>, where the last element from the formula is an exchange rate from NBP tables.</p>
+              </ol>
+              <p>As you can see, calculating this by hand may be quite exhausting, so I recommend using some external services like <b>podatekgieldowy.pl</b> to handle this calculations for you.</p>
+            </ol>
+            <p>After the whole process the filled form should look like this:</p>
+            <div class="text-center">
+              <img src="static/img/add-position-filled.png" alt="add form filled" style="max-width: 100%; height: auto;border: 5px solid white;">
+            </div> 
+            <p></p>
+            <p>Finally, when <b>Add</b> button is clicked, the page will refresh and we can see that the position has been added to our portfolio:</p>
+            <div class="text-center">
+              <img src="static/img/added-position.png" alt="added position" style="max-width: 100%; height: auto;border: 5px solid white;">
+            </div> 
+            <p></p>
+          </section>
+          <section id="edit-position">
+          <h2>Editing position</h2>
+          <p>The process of editing your position is basically the same as adding position. The same form appears when <b>Edit Position</b> button is clicked.
+            All you have to do is fill in the fields that you wish to be changed before hitting the <b>Edit</b> button.</p>
+          </section>
+          <section id="delete-position">
+          <h2>Deleting position</h2>
+          <p>Deleting your position is quite easy. At the <b>Positions</b> webpage, hit the <b>Delete Position</b> button, then enter the ticker of the position you wish to be deleted:</p>
+          <div class="text-center">
+            <img src="static/img/deleted-position.png" alt="deleted position" style="max-width: 100%; height: auto;border: 5px solid white;">
+          </div>
+          <p></p> 
+          <p>After hitting the <b>Delete</b> button you will see that the dividends from the deleted position were transfered to <b>DELETED_SUM</b> position.</p>
+          <div class="text-center">
+            <img src="static/img/deleted_sum-showcase.png" alt="deleted position" style="max-width: 100%; height: auto;border: 5px solid white;">
+          </div>
+          <p></p>
+        </section>
+        <section id="limitations">
+          <h2>API limits</h2>
+          <p>Due to the current API plan limits, the platform is restricted to 5 API calls/minute. Because of that, sometimes adding a stock to portfolio may not work if many users are 
+            simultaneously updating the portfolio. If this happens to you, please wait about minute and try to add it again. If the problem doesn't stop - contact me.</p> 
+            <p>There is a built-in mechanism which restricts the backend from sending unnecessary calls to API - if some user adds a position to their portfolio,
+            which somebody else has added before, the call won't be made. However, adding a position which doesn't already have an entry in database requres making the call. As the user base grows, I expect
+            that the problem will occur less and upgarding data provider plan would definitely help.</p>
+            <h2>Different regions</h2>
+            <p>Due to some bad decisions during early development of the website, backend and database are located on different continents, which visibly affects the speed of the website. In the near future 
+              I plan on migrating the whole infrastructure to Europe.</p>
+        </section>
+        <div class="pb-0">
+        <section id="further-plans">
+          <h2>Further plans</h2>
+          <p>There are many areas, into which the platofrm could be expanded. I'm eager to hear your ideas. The list below covers some of the things that are on my roadmap:</p>
+          <ul>
+            <li>Adding sending notifications to user when the dividend is paid</li>
+            <li>Adding basic metrics, like portfolio yield, YoC, etc.</li>
+            <li>Support for storing the prices, at which the position has been opened</li>
+            <li>Fair-value calculators</li>
+          </ul> 
+        </section>
+      </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="pb-0">
+  <section id="contact" class="bg-dark p-5 text-light text-center">
+    <div class="container">
+      <h2 class="display-4">Contact Me</h2>
+      <p class="lead">Have any questions or feedback? Send us an email!</p>
+      <a href="mailto:kasper.kornak@gmail.com" class="btn btn-primary">Send Email</a>
+    </div>
+  </section>
+</div>
+  
+  <div id="footer">
+    <footer class="pt-0 p-sm-8 bg-dark text-white text-center position-relative footer">
+      <p class="footer-1">Copyright &copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+      <p>Alpha version. Calculations are for illustrative purposes only. The service owner is not responsible for errors resulting from the use of the application.</p>
+  </footer>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+  crossorigin="anonymous"></script>
+</body>
+</html>

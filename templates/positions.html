@@ -38,6 +38,17 @@
     .text-light {
       color: var(--bs-light);
     }
+
+    .footer-1 {
+      line-height: 0.1;
+    }
+
+
+#footer {
+  height: 20px;
+  background: red; 
+  color: white;
+}
   </style>
 </head>
 <body>
@@ -52,12 +63,18 @@
       <div class="collapse navbar-collapse" id="navmenu">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a href="/" class="nav-link">Home</a>
-          </li>
-          <li class="nav-item">
-            <a href="/logout" class="nav-link">Logout</a>
-          </li>
-        </ul>
+              <a href="/" class="nav-link">Home</a>
+            </li>
+        <li class="nav-item">
+          <a href="/positions" class="nav-link">Positions</a>
+        </li>
+        <li class="nav-item">
+          <a href="/docs" class="nav-link">Docs</a>
+        </li>
+        <li class="nav-item">
+          <a href="/logout" class="nav-link">Logout</a>
+        </li>
+      </ul>
       </div>
     </div>
   </nav>
@@ -69,12 +86,12 @@
         <tr>
           <th>Ticker</th>
           <th>Shares</th>
-          <th>Domestic Tax</th>
-          <th>Div Quarterly Rate</th>
-          <th>Div YTD</th>
-          <th>Div PLN</th>
-          <th>Next Payment</th>
-          <th>Prev Payment</th>
+          <th>Tax rate in Poland</th>
+          <th>Next payment amount</th>
+          <th>Dividend YTD (USD)</th>
+          <th>Dividend Tax to be paid (PLN)</th>
+          <th>Upcoming payment</th>
+          <th>Previous payment</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -195,11 +212,12 @@
   </div>
 
   <!-- Footer -->
-  <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
-    <div class="container">
-      <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
-    </div>
+  <div id="footer">
+    <footer class="pt-0 p-sm-8 bg-dark text-white text-center position-relative footer">
+      <p>Copyright &copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+      <p class="footer-1">Alpha version. Calculations are for illustrative purposes only. The service owner is not responsible for errors resulting from the use of the application.</p>
   </footer>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
   <script>
     function formatDate(dateString) {
@@ -243,8 +261,8 @@
               $('<td>').text(position.shares).appendTo(row);
               $('<td>').text(position.domestictax).appendTo(row);
               $('<td>').text(position.divquarterlyrate).appendTo(row);
-              $('<td>').text(position.divytd).appendTo(row);
-              $('<td>').text(position.divpln).appendTo(row);
+              $('<td>').text(position.divytd.toFixed(2)).appendTo(row);
+              $('<td>').text(position.divpln.toFixed(2)).appendTo(row);
               $('<td>').text(formatDate(position.nextpayment)).appendTo(row);
               $('<td>').text(formatDate(position.prevpayment)).appendTo(row);
 
