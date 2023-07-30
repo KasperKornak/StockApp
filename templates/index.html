@@ -22,6 +22,18 @@
       height: calc(100% - 56px);
       width: 95vw;
     }
+
+    .footer-1 {
+      line-height: 0.1;
+    }
+
+
+#footer {
+  height: 20px;
+  background: red; 
+  color: white;
+}
+
   </style>
 </head>
 <body>
@@ -36,12 +48,18 @@
       <div class="collapse navbar-collapse" id="navmenu">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a href="/positions" class="nav-link">Positions</a>
-          </li>
-          <li class="nav-item">
-            <a href="/logout" class="nav-link">Logout</a>
-          </li>
-        </ul>
+              <a href="/" class="nav-link">Home</a>
+            </li>
+        <li class="nav-item">
+          <a href="/positions" class="nav-link">Positions</a>
+        </li>
+        <li class="nav-item">
+          <a href="/docs" class="nav-link">Docs</a>
+        </li>
+        <li class="nav-item">
+          <a href="/logout" class="nav-link">Logout</a>
+        </li>
+      </ul>
       </div>
     </div>
   </nav>
@@ -140,11 +158,12 @@
 
 
   <!-- Footer -->
-  <footer class="pt-0 p-sm-8 bg-dark text-white text-center">
-    <div class="container">
-      <p class="lead" style="margin-bottom: 0;">&copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
-    </div>
+  <div id="footer">
+    <footer class="pt-0 p-sm-8 bg-dark text-white text-center position-relative footer">
+      <p class="footer-1">Copyright &copy; 2023 Kasper Kornak. From Kraków with ❤️</p>
+      <p>Alpha version. Calculations are for illustrative purposes only. The service owner is not responsible for errors resulting from the use of the application.</p>
   </footer>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
