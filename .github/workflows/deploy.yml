@@ -78,8 +78,18 @@ jobs:
         username: ${{ secrets.AWS_USERNAME }}
         key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
         script: |
-          if pgrep main; then pkill main; fi
-          if pgrep python3; then pkill python3; fi
+          main_pids=$(pgrep -f "/home/ubuntu/main")
+
+          if [ -z "$main_pids" ]; then
+            echo "No processes found for /home/ubuntu/main."
+          else
+            echo "Found the following processes for /home/ubuntu/main:"
+            echo "$main_pids"
+            echo "Killing these processes..."
+            kill -9 $main_pids
+          
+            echo "Processes killed."
+          fi
 
     - name: Run backend on EC2
       uses: appleboy/ssh-action@master
