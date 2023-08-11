@@ -58,6 +58,8 @@ func UpdateUserList() {
 					}
 					if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
 						position.SharesAtExDiv = position.Shares
+					} else {
+						position.SharesAtExDiv = position.SharesAtExDiv
 					}
 
 				}
@@ -100,7 +102,7 @@ func UpdateStockDb() {
 		nextpayment, exdivdate, cashamount := PolygonTickerUpdate(ticker)
 
 		var divPaidBool int
-		if stockData.NextPayment < int(time.Now().Unix()) {
+		if nextpayment < int(time.Now().Unix()) {
 			// paid out
 			divPaidBool = 1
 		} else {
@@ -118,6 +120,9 @@ func UpdateStockDb() {
 			}
 			update := bson.M{"$set": bson.M{fmt.Sprintf("stockList.%s", ticker): updatedPosition}}
 			_, err := collection.UpdateOne(context.TODO(), filter, update)
+			log.Println("Updated data for: ", stockData, ";\n Next payment: ", stockData.NextPayment, ";\n Prevoius Payment: ",
+				stockData.PrevPayment, ";\n Ex-div date: ", stockData.ExDividend, ";\n Cash amount: ", stockData.CashAmount,
+				";\n Div paid: ", stockData.DivPaid)
 			if err != nil {
 				log.Println("func UpdateStockDb: ", err)
 			}
@@ -150,7 +155,7 @@ func CalculateDividends() {
 			if (position.Ticker != "DELETED_SUM") && (position.DivPaid == 0) && (position.NextPayment <= int(time.Now().Unix())) {
 
 				currUserStocks.Stocks[i].DivYTD = float64(position.SharesAtExDiv)*position.DivQuarterlyRate + position.DivYTD
-				currUserStocks.Stocks[i].DivPLN = position.DivQuarterlyRate * float64(position.SharesAtExDiv) * currencyPair * float64(position.Domestictax) / 100.0
+				currUserStocks.Stocks[i].DivPLN = position.DivQuarterlyRate*float64(position.SharesAtExDiv)*currencyPair*float64(position.Domestictax)/100.0 + position.DivPLN
 				currUserStocks.Stocks[i].DivPaid = 1
 				for j, month := range months.Months {
 					if month.Name[:3] == currentMonth.String()[:3] {

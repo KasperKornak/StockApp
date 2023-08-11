@@ -16,7 +16,7 @@ func main() {
 	r := routes.NewRouter()
 	http.Handle("/", r)
 	c := cron.New()
-	c.AddFunc("18 23 * * *", func() {
+	c.AddFunc("36 19 * * *", func() {
 		log.Println("started")
 		models.CalculateDividends()
 		log.Println("calculating divs finished")

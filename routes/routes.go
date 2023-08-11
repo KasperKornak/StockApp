@@ -319,7 +319,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 
 	toAdd.Ticker = strings.ToUpper(toAdd.Ticker)
 	isTickerAvailable := models.CheckTickerAvailabilty(toAdd.Ticker)
-
+	toAdd.SharesAtExDiv = toAdd.Shares
 	if !isTickerAvailable {
 		log.Println("ticker unavailable!")
 		return
