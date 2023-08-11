@@ -211,7 +211,7 @@ func RegisterUser(username, password string) error {
 	var userList UsernamesDocument
 	_ = utils.FindOne(context.TODO(), userListFilter).Decode(&userList)
 	if err != nil {
-		log.Println(err)
+		log.Println("func RegisterUser: ", err)
 	}
 
 	userList.Usernames = append(userList.Usernames, username)
@@ -254,7 +254,7 @@ func TransferDivs(username string, ticker string) {
 	filter := bson.M{"stocks": bson.M{"$elemMatch": bson.M{"ticker": ticker}}, "ticker": "positions"}
 	_, err := stocks.UpdateOne(context.TODO(), filter, update, updateOptions)
 	if err != nil {
-		log.Println("Error updating document:", err)
+		log.Println("func RegisterUser:; Error updating document:", err)
 	}
 }
 
@@ -267,7 +267,7 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 	filter := bson.M{"ticker": "positions", "stocks.ticker": ticker}
 	err := stocks.FindOne(context.TODO(), filter).Decode(&stockData)
 	if err != nil {
-		log.Println(err)
+		log.Println("func ModelGetStockByTicker", err)
 		return PositionData{}
 	}
 

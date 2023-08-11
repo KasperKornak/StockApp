@@ -100,14 +100,20 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		utils.InternalServerError(w)
 		return
 	}
-	session, _ := sessions.Store.Get(r, "session")
+	session, err := sessions.Store.Get(r, "session")
+	if err != nil {
+		log.Println("func loginPostHandler: ", err)
+	}
 	session.Values["user_id"] = userId
 	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func logoutGetHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := sessions.Store.Get(r, "session")
+	session, err := sessions.Store.Get(r, "session")
+	if err != nil {
+		log.Println("func logoutGetHandler: ", err)
+	}
 	delete(session.Values, "user_id")
 	session.Save(r, w)
 	http.Redirect(w, r, "/login", http.StatusFound)
@@ -136,18 +142,21 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	var CurrUser WebUser
 	var tempUser models.User
 	var mongotransfer MongoSummary
-
+	var err error
 	CurrUser.Id = models.GetName(r)
 	tempUser.Id = CurrUser.Id
-	CurrUser.Username, _ = tempUser.GetUsername()
+	CurrUser.Username, err = tempUser.GetUsername()
+	if err != nil {
+		log.Println("func indexGetHandler: ", err)
+	}
 	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
 
 	mongotransfer = MongoSummary{}
-	err := stocks.FindOne(context.TODO(), filter).Decode(&mongotransfer)
+	err = stocks.FindOne(context.TODO(), filter).Decode(&mongotransfer)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("func indexGetHandler", err)
 	}
 	CurrUser.DividendTax = mongotransfer.DividendTax
 	CurrUser.DividendsYTD = mongotransfer.DividendsYTD
@@ -159,17 +168,20 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 	var CurrUser WebUser
 	var tempUser models.User
 	var mongomonths MongoMonths
-
+	var err error
 	CurrUser.Id = models.GetName(r)
 	tempUser.Id = CurrUser.Id
-	CurrUser.Username, _ = tempUser.GetUsername()
+	CurrUser.Username, err = tempUser.GetUsername()
+	if err != nil {
+		log.Println("func barDataHandler: ", err)
+	}
 	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
 
 	var mongotransfer MongoSummary
-	err := stocks.FindOne(context.TODO(), filter).Decode(&mongotransfer)
+	err = stocks.FindOne(context.TODO(), filter).Decode(&mongotransfer)
 	if err != nil {
-		log.Println(err)
+		log.Println("func barDataHandler: ", err)
 	}
 
 	// Assign the fetched data to the MongoMonths struct
@@ -183,7 +195,7 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 	// Marshal the chart data to JSON and send as response
 	jsonData, err := json.Marshal(mongomonths)
 	if err != nil {
-		log.Println(err)
+		log.Println("func barDataHandler: ", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -194,20 +206,24 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
 	var toTable models.Positions
 	var tempUser models.User
+	var err error
 	id := models.GetName(r)
 	tempUser.Id = id
-	username, _ := tempUser.GetUsername()
+	username, err := tempUser.GetUsername()
+	if err != nil {
+		log.Println("func positionsDataHandler: ", err)
+	}
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{"ticker": "positions"}
 
-	err := stocks.FindOne(context.TODO(), filter).Decode(&toTable)
+	err = stocks.FindOne(context.TODO(), filter).Decode(&toTable)
 	if err != nil {
-		log.Println(err)
+		log.Println("func positionsDataHandler: ", err)
 	}
 
 	jsonData, err := json.Marshal(toTable)
 	if err != nil {
-		log.Println(err)
+		log.Println("func positionsDataHandler: ", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -223,12 +239,15 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	var toEdit models.PositionData
 	err := json.NewDecoder(r.Body).Decode(&toEdit)
 	if err != nil {
-		log.Println(err)
+		log.Println("func updateEditHandler: ", err)
 	}
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
-	username, _ := tempUser.GetUsername()
+	username, err := tempUser.GetUsername()
+	if err != nil {
+		log.Println("func updateEditHandler: ", err)
+	}
 	toEdit.Currency = strings.ToUpper(toEdit.Currency)
 	toEdit.Ticker = strings.ToUpper(toEdit.Ticker)
 	log.Println(toEdit.Ticker)
@@ -239,7 +258,7 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{"$set": bson.M{"stocks.$": edited}}
 	_, err = stocks.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Println("Error updating document:", err)
+		log.Println("func updateEditHandler; Error updating document:", err)
 	}
 	models.UpdateSummary(username)
 }
@@ -249,10 +268,13 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
-	username, _ := tempUser.GetUsername()
-	err := json.NewDecoder(r.Body).Decode(&toDelete)
+	username, err := tempUser.GetUsername()
 	if err != nil {
-		log.Println(err)
+		log.Println("func updateDeleteHandler: ", err)
+	}
+	err = json.NewDecoder(r.Body).Decode(&toDelete)
+	if err != nil {
+		log.Println("func updateDeleteHandler: ", err)
 	}
 
 	if toDelete.Ticker == "DELETED_SUM" {
@@ -287,7 +309,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	var toAdd models.PositionData
 	err := json.NewDecoder(r.Body).Decode(&toAdd)
 	if err != nil {
-		log.Println(err)
+		log.Println("func updateAddHandler: ", err)
 	}
 
 	if toAdd.Ticker == "DELETED_SUM" {
@@ -306,7 +328,10 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
-	username, _ := tempUser.GetUsername()
+	username, err := tempUser.GetUsername()
+	if err != nil {
+		log.Println("func updateAddHandler: ", err)
+	}
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{
 		"ticker": "positions",
@@ -314,7 +339,7 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{"$push": bson.M{"stocks": toAdd}}
 	_, err = stocks.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Println("Error updating document: ", err)
+		log.Println("func updateAddHandler;Error updating document: ", err)
 	}
 	models.UpdateSummary(username)
 	models.GetTimestamps(toAdd.Ticker, username)
@@ -325,21 +350,24 @@ func monthSummaryUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var currMonth, editedMonthValues models.InitMongoMonths
 	id := models.GetName(r)
 	tempUser.Id = id
-	username, _ := tempUser.GetUsername()
+	username, err := tempUser.GetUsername()
+	if err != nil {
+		log.Println("func monthSummaryUpdateHandler: ", err)
+	}
 	stocks := models.MongoClient.Database("users").Collection(username)
 	monthFilter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
 
 	_ = stocks.FindOne(context.TODO(), monthFilter).Decode(&currMonth)
-	err := json.NewDecoder(r.Body).Decode(&editedMonthValues)
+	err = json.NewDecoder(r.Body).Decode(&editedMonthValues)
 	if err != nil {
-		log.Println(err)
+		log.Println("func monthSummaryUpdateHandler: ", err)
 	}
 
 	updateDoc := bson.M{"$set": editedMonthValues}
 
 	_, err = stocks.UpdateOne(context.TODO(), monthFilter, updateDoc)
 	if err != nil {
-		log.Println(err)
+		log.Println("func monthSummaryUpdateHandler: ", err)
 	}
 }
 

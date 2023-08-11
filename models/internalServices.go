@@ -27,7 +27,7 @@ func RetrieveUsers() UsernamesDocument {
 	err := collection.FindOne(context.TODO(), filter).Decode(&userList)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("func RetrieveUsers: ", err)
 	}
 
 	return userList
@@ -42,7 +42,10 @@ func UpdateUserList() {
 		var currUserStocks Positions
 
 		curUserFilter := bson.M{"ticker": "positions"}
-		_ = currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		if err != nil {
+			log.Println("func UpdateUserList:", err)
+		}
 
 		for _, position := range currUserStocks.Stocks {
 			for availableStockTicker, availableStock := range currAvailableStocks.StockList {
@@ -65,9 +68,9 @@ func UpdateUserList() {
 				"stocks": currUserStocks.Stocks,
 			},
 		}
-		_, err := currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
+		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
 		if err != nil {
-			log.Println(err)
+			log.Println("func UpdateUserList: ", err)
 		}
 	}
 
@@ -81,7 +84,7 @@ func RetrieveAvailableStocks() StockUtils {
 	err := collection.FindOne(context.TODO(), filter).Decode(&stockList)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("func RetrieveAvailableStocks: ", err)
 	}
 
 	return stockList
@@ -116,7 +119,7 @@ func UpdateStockDb() {
 			update := bson.M{"$set": bson.M{fmt.Sprintf("stockList.%s", ticker): updatedPosition}}
 			_, err := collection.UpdateOne(context.TODO(), filter, update)
 			if err != nil {
-				log.Println(err)
+				log.Println("func UpdateStockDb: ", err)
 			}
 		}
 		if (timeCounter % 5) == 0 {
@@ -134,10 +137,15 @@ func CalculateDividends() {
 		var currUserStocks Positions
 		currentMonth := time.Now().Month()
 		curUserFilter := bson.M{"ticker": "positions"}
-		_ = currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		if err != nil {
+			log.Println("func CalculateDividends: ", err)
+		}
 		var months InitMongoMonths
-		_ = currUserCollection.FindOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}).Decode(&months)
-
+		err = currUserCollection.FindOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}).Decode(&months)
+		if err != nil {
+			log.Println("func CalculateDividends: ", err)
+		}
 		for i, position := range currUserStocks.Stocks {
 			if (position.Ticker != "DELETED_SUM") && (position.DivPaid == 0) && (position.NextPayment <= int(time.Now().Unix())) {
 
@@ -155,16 +163,16 @@ func CalculateDividends() {
 
 		// Update the stocks array in the document
 		update := bson.M{"$set": bson.M{"stocks": currUserStocks.Stocks}}
-		_, err := currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
+		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
 		if err != nil {
-			log.Println(err)
+			log.Println("func CalculateDividends: ", err)
 		}
 
 		// Update the MONTH_SUMARY document with modified months
 		update = bson.M{"$set": months}
 		_, err = currUserCollection.UpdateOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}, update)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("func CalculateDividends: ", err)
 		}
 		UpdateSummary(username)
 	}
@@ -179,17 +187,17 @@ func GetForex() float64 {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func GetForex: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func GetForex: ", err)
 	}
 	var response ForexResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func GetForex: ", err)
 	}
 	log.Println(response)
 	exRate := response.Results[0].C
@@ -211,8 +219,14 @@ func UpdateSummary(username string) {
 	var summary initYearSummary
 	var positions Positions
 
-	_ = collection.FindOne(context.TODO(), yearFilter).Decode(&summary)
-	_ = collection.FindOne(context.TODO(), positionFilter).Decode(&positions)
+	err := collection.FindOne(context.TODO(), yearFilter).Decode(&summary)
+	if err != nil {
+		log.Println("func UpdateSummary: ", err)
+	}
+	err = collection.FindOne(context.TODO(), positionFilter).Decode(&positions)
+	if err != nil {
+		log.Println("func UpdateSummary: ", err)
+	}
 
 	divYtd := 0.0
 	divPln := 0.0
@@ -227,8 +241,8 @@ func UpdateSummary(username string) {
 	summary.DividendsYTD = divYtd
 
 	update := bson.M{"$set": summary}
-	_, err := collection.UpdateOne(context.TODO(), yearFilter, update)
+	_, err = collection.UpdateOne(context.TODO(), yearFilter, update)
 	if err != nil {
-		log.Println(err)
+		log.Println("func UpdateSummary: ", err)
 	}
 }

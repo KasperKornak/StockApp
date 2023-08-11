@@ -74,7 +74,10 @@ func CheckTickerAvailabilty(ticker string) bool {
 
 	stockDb := MongoClient.Database("users").Collection("stockUtils")
 	filter := bson.M{"ticker": "AVAILABLE_STOCKS"}
-	_ = stockDb.FindOne(context.TODO(), filter).Decode(&currStocksInDb)
+	err := stockDb.FindOne(context.TODO(), filter).Decode(&currStocksInDb)
+	if err != nil {
+		log.Println("func CheckTickerAvailabilty: ", err)
+	}
 
 	for tickerIter := range currStocksInDb.StockList {
 		if tickerIter == ticker {
@@ -85,17 +88,17 @@ func CheckTickerAvailabilty(ticker string) bool {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func CheckTickerAvailabilty: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func CheckTickerAvailabilty: ", err)
 	}
 	var response PolygonJson
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func CheckTickerAvailabilty: ", err)
 	}
 
 	if len(response.Results) < 1 {
@@ -117,24 +120,33 @@ func AddTickerToDb(ticker string) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func AddTickerToDb: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func AddTickerToDb: ", err)
 	}
 	var response PolygonJson
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func AddTickerToDb: ", err)
 	}
 
-	t, _ := time.Parse("2006-01-02", response.Results[0].PayDate)
+	t, err := time.Parse("2006-01-02", response.Results[0].PayDate)
+	if err != nil {
+		log.Println("func AddTickerToDb: ", err)
+	}
 	convertedNextPayment := int(t.Unix())
-	t, _ = time.Parse("2006-01-02", response.Results[1].PayDate)
+	t, err = time.Parse("2006-01-02", response.Results[1].PayDate)
+	if err != nil {
+		log.Println("func AddTickerToDb: ", err)
+	}
 	convertedPrevPayment := int(t.Unix())
-	t, _ = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
+	t, err = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
+	if err != nil {
+		log.Println("func AddTickerToDb: ", err)
+	}
 	convertedExDivDate := int(t.Unix())
 
 	var divPaidBool int
@@ -160,7 +172,7 @@ func AddTickerToDb(ticker string) {
 
 	_, err = collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		fmt.Println("Failed to update document:", err)
+		fmt.Println("func AddTickerToDb; Failed to update document: ", err)
 		return
 	}
 }
@@ -174,8 +186,14 @@ func GetTimestamps(ticker string, username string) {
 	var stockListDb StockUtils
 	var userPositions Positions
 
-	_ = stockUtilsCollection.FindOne(context.TODO(), stockListFilter).Decode(&stockListDb)
-	_ = userCollection.FindOne(context.TODO(), userFilter).Decode(&userPositions)
+	err := stockUtilsCollection.FindOne(context.TODO(), stockListFilter).Decode(&stockListDb)
+	if err != nil {
+		log.Println("func GetTimestamps: ", err)
+	}
+	err = userCollection.FindOne(context.TODO(), userFilter).Decode(&userPositions)
+	if err != nil {
+		log.Println("func GetTimestamps: ", err)
+	}
 
 	updateFilter := bson.M{"stocks.ticker": ticker}
 	updateDates := bson.M{
@@ -189,9 +207,9 @@ func GetTimestamps(ticker string, username string) {
 		},
 	}
 
-	_, err := userCollection.UpdateOne(context.Background(), updateFilter, updateDates)
+	_, err = userCollection.UpdateOne(context.Background(), updateFilter, updateDates)
 	if err != nil {
-		log.Println(err)
+		log.Println("func GetTimestamps: ", err)
 	}
 
 }
@@ -205,22 +223,28 @@ func PolygonTickerUpdate(ticker string) (nextpayment int, exdivdate int, cashamo
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func PolygonTickerUpdate: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func PolygonTickerUpdate: ", err)
 	}
 	var response PolygonJson
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("func PolygonTickerUpdate: ", err)
 	}
 
-	t, _ := time.Parse("2006-01-02", response.Results[0].PayDate)
+	t, err := time.Parse("2006-01-02", response.Results[0].PayDate)
+	if err != nil {
+		log.Println("func PolygonTickerUpdate: ", err)
+	}
 	convertedNextPayment := int(t.Unix())
-	t, _ = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
+	t, err = time.Parse("2006-01-02", response.Results[0].ExDividendDate)
+	if err != nil {
+		log.Println("func PolygonTickerUpdate: ", err)
+	}
 	convertedExDivDate := int(t.Unix())
 
 	return convertedNextPayment, convertedExDivDate, response.Results[0].CashAmount
