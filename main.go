@@ -11,12 +11,15 @@ import (
 )
 
 func main() {
+	// init connections to dbs, load templates and start router
 	models.Init()
 	utils.LoadTemplates("templates/*.html")
 	r := routes.NewRouter()
 	http.Handle("/", r)
+
+	// cronjob which updates dbs
 	c := cron.New()
-	c.AddFunc("36 19 * * *", func() {
+	c.AddFunc("18 23 * * *", func() {
 		log.Println("started")
 		models.CalculateDividends()
 		log.Println("calculating divs finished")
@@ -26,8 +29,8 @@ func main() {
 		log.Println("updating user list finished")
 		log.Println("ended")
 	})
-
 	c.Start()
 
+	// start serving on port 80, change to 443 n future
 	log.Fatal(http.ListenAndServe(":80", nil))
 }

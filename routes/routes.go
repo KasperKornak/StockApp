@@ -19,6 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// used to render username, months, bar chart and dividend data on home page
 type WebUser struct {
 	Id           int64
 	Username     string
@@ -28,6 +29,7 @@ type WebUser struct {
 	Bar          *charts.Bar
 }
 
+// struct used to retrieve MONGO_MONTHS document from mongodb
 type MongoSummary struct {
 	ID           string      `bson:"_id"`
 	Year         int         `bson:"year"`
@@ -37,11 +39,13 @@ type MongoSummary struct {
 	Months       []MonthData `bson:"months"`
 }
 
+// used to store each individual month
 type MonthData struct {
 	Name  string  `bson:"name"`
 	Value float64 `bson:"value"`
 }
 
+// used to store all months
 type MongoMonths struct {
 	ID     string      `bson:"_id"`
 	Year   int         `bson:"year"`
@@ -49,12 +53,16 @@ type MongoMonths struct {
 	Months []MonthData `bson:"months"`
 }
 
+// used to handle delete position requests
 type DeletePosition struct {
 	Ticker string `json:"ticker" bson:"ticker"`
 }
 
+// router used to handle all user and api endpoints
 func NewRouter() *mux.Router {
 	r := mux.NewRouter()
+
+	// user endpoints
 	r.HandleFunc("/", middleware.AuthRequired(indexGetHandler)).Methods("GET")
 	r.HandleFunc("/login", loginGetHandler).Methods("GET")
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
@@ -62,28 +70,35 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/register", registerGetHandler).Methods("GET")
 	r.HandleFunc("/positions", middleware.AuthRequired(positionsGetHandler)).Methods("GET")
 	r.HandleFunc("/register", registerPostHandler).Methods("POST")
-	r.HandleFunc("/logout", registerPostHandler).Methods("GET")
+	r.HandleFunc("/docs", tutorialHandler).Methods("GET")
+
+	// api endpoints
 	r.HandleFunc("/api/data", middleware.AuthRequired(barDataHandler)).Methods("GET")
 	r.HandleFunc("/api/positions", middleware.AuthRequired(positionsDataHandler)).Methods("GET")
 	r.HandleFunc("/api/update", middleware.AuthRequired(updateEditHandler)).Methods("PUT")
 	r.HandleFunc("/api/update", middleware.AuthRequired(updateAddHandler)).Methods("POST")
 	r.HandleFunc("/api/update", middleware.AuthRequired(updateDeleteHandler)).Methods("DELETE")
 	r.HandleFunc("/api/month", middleware.AuthRequired(monthSummaryUpdateHandler)).Methods("POST")
-	r.HandleFunc("/docs", tutorialHandler).Methods("GET")
+
+	// file server for all static files on website
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	return r
 }
 
+// execute template of login page
 func loginGetHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "login.html", nil)
 }
 
+// handle login request
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("password")
 	user, err := models.AuthenticateUser(username, password)
+
+	// throw an error if auth unsuccessful
 	if err != nil {
 		switch err {
 		case models.ErrUserNotFound:
@@ -100,33 +115,46 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		utils.InternalServerError(w)
 		return
 	}
+
+	// get a session if successful
 	session, err := sessions.Store.Get(r, "session")
 	if err != nil {
 		log.Println("func loginPostHandler: ", err)
 	}
 	session.Values["user_id"] = userId
 	session.Save(r, w)
+
+	// redirect to homepage
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
+// logout
 func logoutGetHandler(w http.ResponseWriter, r *http.Request) {
+	// delete user's session
 	session, err := sessions.Store.Get(r, "session")
 	if err != nil {
 		log.Println("func logoutGetHandler: ", err)
 	}
 	delete(session.Values, "user_id")
 	session.Save(r, w)
+
+	// redirect to login page
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+// execute tempalate of register website
 func registerGetHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "register.html", nil)
 }
 
+// handle register request
 func registerPostHandler(w http.ResponseWriter, r *http.Request) {
+	// extract register data
 	r.ParseForm()
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("password")
+
+	// register user if unsuccessful throw an error
 	err := models.RegisterUser(username, password)
 	if err == models.ErrUsernameTaken {
 		utils.ExecuteTemplate(w, "register.html", "username taken")
@@ -135,10 +163,14 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 		utils.InternalServerError(w)
 		return
 	}
+
+	// redirect to login page
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+// render home page
 func indexGetHandler(w http.ResponseWriter, r *http.Request) {
+	// init variable handling user data and bar data
 	var CurrUser WebUser
 	var tempUser models.User
 	var mongotransfer MongoSummary
@@ -149,6 +181,8 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func indexGetHandler: ", err)
 	}
+
+	// select correct collection in mongodb and retrieve YEAR_SUMMARY data
 	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
 
@@ -158,13 +192,16 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func indexGetHandler", err)
 	}
+
+	// final data to be rendered
 	CurrUser.DividendTax = mongotransfer.DividendTax
 	CurrUser.DividendsYTD = mongotransfer.DividendsYTD
-
 	utils.ExecuteTemplate(w, "index.html", CurrUser)
 }
 
+// used to handle requests for rendering each month's data
 func barDataHandler(w http.ResponseWriter, r *http.Request) {
+	// init variables to handle rendering template
 	var CurrUser WebUser
 	var tempUser models.User
 	var mongomonths MongoMonths
@@ -175,16 +212,16 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func barDataHandler: ", err)
 	}
+	// retrieve MONTH_SUMMARY from mongodb
 	stocks := models.MongoClient.Database("users").Collection(CurrUser.Username)
 	filter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
-
 	var mongotransfer MongoSummary
 	err = stocks.FindOne(context.TODO(), filter).Decode(&mongotransfer)
 	if err != nil {
 		log.Println("func barDataHandler: ", err)
 	}
 
-	// Assign the fetched data to the MongoMonths struct
+	// assign the fetched data to the MongoMonths struct
 	mongomonths = MongoMonths{
 		ID:     mongotransfer.ID,
 		Year:   mongotransfer.Year,
@@ -192,18 +229,19 @@ func barDataHandler(w http.ResponseWriter, r *http.Request) {
 		Months: mongotransfer.Months,
 	}
 
-	// Marshal the chart data to JSON and send as response
+	// marshal the chart data to JSON and send as response
 	jsonData, err := json.Marshal(mongomonths)
 	if err != nil {
 		log.Println("func barDataHandler: ", err)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
+// handle data needed for /positions
 func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
+	// init variables needed to handle data
 	var toTable models.Positions
 	var tempUser models.User
 	var err error
@@ -213,14 +251,15 @@ func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func positionsDataHandler: ", err)
 	}
+	// retrieve positions data
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{"ticker": "positions"}
-
 	err = stocks.FindOne(context.TODO(), filter).Decode(&toTable)
 	if err != nil {
 		log.Println("func positionsDataHandler: ", err)
 	}
 
+	// marshal data and send it back
 	jsonData, err := json.Marshal(toTable)
 	if err != nil {
 		log.Println("func positionsDataHandler: ", err)
@@ -231,16 +270,21 @@ func positionsDataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+// render positions page
 func positionsGetHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "positions.html", nil)
 }
 
+// handler for editing position data
 func updateEditHandler(w http.ResponseWriter, r *http.Request) {
+	// init variable to decode received json data
 	var toEdit models.PositionData
 	err := json.NewDecoder(r.Body).Decode(&toEdit)
 	if err != nil {
 		log.Println("func updateEditHandler: ", err)
 	}
+
+	// user check
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
@@ -248,10 +292,12 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func updateEditHandler: ", err)
 	}
+
+	// make ticker and currency to upper to search mongodb
 	toEdit.Currency = strings.ToUpper(toEdit.Currency)
 	toEdit.Ticker = strings.ToUpper(toEdit.Ticker)
-	log.Println(toEdit.Ticker)
 
+	// edit position and update it in mongodb
 	edited := models.EditPosition(toEdit, username)
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{"stocks.ticker": toEdit.Ticker}
@@ -260,10 +306,14 @@ func updateEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func updateEditHandler; Error updating document:", err)
 	}
+
+	// update YEAR_SUMMARY document
 	models.UpdateSummary(username)
 }
 
+// handler used to delete position
 func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	// init variables
 	var toDelete DeletePosition
 	var tempUser models.User
 	id := models.GetName(r)
@@ -272,17 +322,23 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func updateDeleteHandler: ", err)
 	}
+
+	// decode received json data
 	err = json.NewDecoder(r.Body).Decode(&toDelete)
 	if err != nil {
 		log.Println("func updateDeleteHandler: ", err)
 	}
 
+	// check if user wants to delte DELETED_SUM document, if true return
 	if toDelete.Ticker == "DELETED_SUM" {
 		log.Println("can't delete this position")
 		return
 	}
 
+	// after deleting position transfer dividends received
 	models.TransferDivs(username, toDelete.Ticker)
+
+	// delete document from mongodb
 	toDelete.Ticker = strings.ToUpper(toDelete.Ticker)
 	stocks := models.MongoClient.Database("users").Collection(username)
 	filter := bson.M{
@@ -301,30 +357,39 @@ func updateDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result.ModifiedCount != 1 {
-		log.Print("contact administrator something went wrong :| \n")
+		log.Print("document wasn't deleted, because it doesn't exist \n")
 	}
 }
 
+// add position handler
 func updateAddHandler(w http.ResponseWriter, r *http.Request) {
+	// init variable to decode received data
 	var toAdd models.PositionData
 	err := json.NewDecoder(r.Body).Decode(&toAdd)
 	if err != nil {
 		log.Println("func updateAddHandler: ", err)
 	}
 
+	// check if user wants to add DELETED_SUM, if yes return
 	if toAdd.Ticker == "DELETED_SUM" {
 		log.Println("can't add this position")
 		return
 	}
 
+	// make ticker uppercase to handle availabilty func
 	toAdd.Ticker = strings.ToUpper(toAdd.Ticker)
+
+	// check if ticker is available in stockUtils
 	isTickerAvailable := models.CheckTickerAvailabilty(toAdd.Ticker)
+
+	// init SharesAtExDiv
 	toAdd.SharesAtExDiv = toAdd.Shares
 	if !isTickerAvailable {
 		log.Println("ticker unavailable!")
 		return
 	}
 
+	// insert document to users collection in mongodb
 	var tempUser models.User
 	id := models.GetName(r)
 	tempUser.Id = id
@@ -341,11 +406,15 @@ func updateAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func updateAddHandler;Error updating document: ", err)
 	}
+
+	// update summary of user and fetch latest timestamps
 	models.UpdateSummary(username)
 	models.GetTimestamps(toAdd.Ticker, username)
 }
 
+// used to handle editing month data at home page
 func monthSummaryUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	// init variables
 	var tempUser models.User
 	var currMonth, editedMonthValues models.InitMongoMonths
 	id := models.GetName(r)
@@ -354,23 +423,30 @@ func monthSummaryUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("func monthSummaryUpdateHandler: ", err)
 	}
+
+	// get the current month data
 	stocks := models.MongoClient.Database("users").Collection(username)
 	monthFilter := bson.M{"ticker": "MONTH_SUMARY", "year": time.Now().Year()}
+	err = stocks.FindOne(context.TODO(), monthFilter).Decode(&currMonth)
+	if err != nil {
+		log.Println("func monthSummaryUpdateHandler: ", err)
+	}
 
-	_ = stocks.FindOne(context.TODO(), monthFilter).Decode(&currMonth)
+	// decode month update data
 	err = json.NewDecoder(r.Body).Decode(&editedMonthValues)
 	if err != nil {
 		log.Println("func monthSummaryUpdateHandler: ", err)
 	}
 
+	// update month data in mongodb
 	updateDoc := bson.M{"$set": editedMonthValues}
-
 	_, err = stocks.UpdateOne(context.TODO(), monthFilter, updateDoc)
 	if err != nil {
 		log.Println("func monthSummaryUpdateHandler: ", err)
 	}
 }
 
+// execute /docs template
 func tutorialHandler(w http.ResponseWriter, r *http.Request) {
 	utils.ExecuteTemplate(w, "docs.html", nil)
 }
