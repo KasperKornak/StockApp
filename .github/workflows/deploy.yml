@@ -86,7 +86,7 @@ jobs:
             echo "Found the following processes for /home/ubuntu/main:"
             echo "$main_pids"
             echo "Killing these processes..."
-            kill -9 $main_pids
+            sudo kill -9 $main_pids
           
             echo "Processes killed."
           fi
