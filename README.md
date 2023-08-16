@@ -1,3 +1,4 @@
+[![Deploy](https://github.com/KasperKornak/StockApp/actions/workflows/deploy.yml/badge.svg)](https://github.com/KasperKornak/StockApp/actions/workflows/deploy.yml)
 # DivTax documentation
 The following is DivTax documentation. Work in progress.
 
@@ -16,6 +17,6 @@ Each module folder has `README.md` files with list of used functions, data struc
 5. Copying binary file to VM.
 6. Copying template files.
 7. Copying static files.
-8. Creating .env file in ~ directory on VM.
+8. Creating .env file in `~` directory on VM.
 9. Killing existing backend process.
 10. Running new version of app on VM.

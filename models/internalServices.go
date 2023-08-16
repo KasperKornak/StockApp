@@ -14,18 +14,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// username list retrieval
 type UsernamesDocument struct {
 	ID        string   `json:"_id" bson:"_id"`
 	Usernames []string `json:"usernames" bson:"usernames"`
 }
 
+// retrieve usernames from mongodb
 func RetrieveUsers() UsernamesDocument {
+	// init variables and connection to mongodb
 	collection := MongoClient.Database("users").Collection("stockUtils")
 	filter := bson.M{"ticker": "ALL_USERNAMES"}
-
 	var userList UsernamesDocument
-	err := collection.FindOne(context.TODO(), filter).Decode(&userList)
 
+	// retrieve username list
+	err := collection.FindOne(context.TODO(), filter).Decode(&userList)
 	if err != nil {
 		log.Println("func RetrieveUsers: ", err)
 	}
@@ -33,22 +36,28 @@ func RetrieveUsers() UsernamesDocument {
 	return userList
 }
 
+// used to update positions in users' collection
 func UpdateUserList() {
+	// init variables, retrieve username list and all tracked stocks
 	currUserList := RetrieveUsers()
 	currentTime := int(time.Now().Unix())
 	currAvailableStocks := RetrieveAvailableStocks()
+
+	// iterate over username list, connect to their collection
 	for _, username := range currUserList.Usernames {
 		currUserCollection := MongoClient.Database("users").Collection(username)
 		var currUserStocks Positions
-
 		curUserFilter := bson.M{"ticker": "positions"}
 		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
 		if err != nil {
 			log.Println("func UpdateUserList:", err)
 		}
 
+		// iterate over positions of user and available stocks
+		// if tickers match, start comparison
 		for _, position := range currUserStocks.Stocks {
 			for availableStockTicker, availableStock := range currAvailableStocks.StockList {
+				// update user's dividend-related data on position list
 				if (position.Ticker == availableStockTicker) && (position.Ticker != "DELETED_SUM") {
 					if position.NextPayment != availableStock.NextPayment {
 						position.NextPayment = availableStock.NextPayment
@@ -56,6 +65,7 @@ func UpdateUserList() {
 						position.DivPaid = availableStock.DivPaid
 						position.ExDivDate = availableStock.ExDividend
 					}
+					// additionally set SharesAtExDiv if they are close to ex-dividend date
 					if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
 						position.SharesAtExDiv = position.Shares
 					} else {
@@ -65,6 +75,7 @@ func UpdateUserList() {
 				}
 			}
 		}
+		// update user's positions
 		update := bson.M{
 			"$set": bson.M{
 				"stocks": currUserStocks.Stocks,
@@ -78,13 +89,15 @@ func UpdateUserList() {
 
 }
 
+// used to retrieve all tracked tickers and their data
 func RetrieveAvailableStocks() StockUtils {
+	// init variables and connection to mongodb
 	collection := MongoClient.Database("users").Collection("stockUtils")
 	filter := bson.M{"ticker": "AVAILABLE_STOCKS"}
-
 	var stockList StockUtils
-	err := collection.FindOne(context.TODO(), filter).Decode(&stockList)
 
+	// retrieve all tracked tickers and their data
+	err := collection.FindOne(context.TODO(), filter).Decode(&stockList)
 	if err != nil {
 		log.Println("func RetrieveAvailableStocks: ", err)
 	}
@@ -92,15 +105,19 @@ func RetrieveAvailableStocks() StockUtils {
 	return stockList
 }
 
-// run this func last
+// run this func last in cronjob
+// updates dividend-related data in tracked tickers document
 func UpdateStockDb() {
+	// init variables, add counter to bypass polygon api restrictions, connect to mongodb
 	availableStocks := RetrieveAvailableStocks()
 	timeCounter := 0
 	collection := MongoClient.Database("users").Collection("stockUtils")
 	filter := bson.M{"ticker": "AVAILABLE_STOCKS"}
-	for ticker, stockData := range availableStocks.StockList {
-		nextpayment, exdivdate, cashamount := PolygonTickerUpdate(ticker)
 
+	// iterate over available stocks
+	for ticker, stockData := range availableStocks.StockList {
+		// get next payment, ex-dividend dates and dividend amount
+		nextpayment, exdivdate, cashamount := PolygonTickerUpdate(ticker)
 		var divPaidBool int
 		if nextpayment < int(time.Now().Unix()) {
 			// paid out
@@ -110,6 +127,7 @@ func UpdateStockDb() {
 			divPaidBool = 0
 		}
 
+		// set values of updated ticker fields
 		if stockData.NextPayment < nextpayment {
 			updatedPosition := PolygonPositionData{
 				NextPayment: nextpayment,
@@ -118,6 +136,8 @@ func UpdateStockDb() {
 				CashAmount:  cashamount,
 				DivPaid:     divPaidBool,
 			}
+
+			// send update together with small debugging message
 			update := bson.M{"$set": bson.M{fmt.Sprintf("stockList.%s", ticker): updatedPosition}}
 			_, err := collection.UpdateOne(context.TODO(), filter, update)
 			log.Println("Updated data for: ", stockData, ";\n Next payment: ", stockData.NextPayment, ";\n Prevoius Payment: ",
@@ -127,6 +147,7 @@ func UpdateStockDb() {
 				log.Println("func UpdateStockDb: ", err)
 			}
 		}
+		// counter control - if counter == 5, sleep for one minute
 		if (timeCounter % 5) == 0 {
 			time.Sleep(60 * time.Second)
 			timeCounter = 0
@@ -134,12 +155,19 @@ func UpdateStockDb() {
 	}
 }
 
+// runs on each user individually, checks if dividend has been paid out and updates paid out data
 func CalculateDividends() {
+	// init variables, get current exchange rate between USD and PLN
 	userList := RetrieveUsers()
+	// TODO: use official NBP api insead of Polygon data
 	currencyPair := GetForex()
+
+	// iterate over usernames, init variables
 	for _, username := range userList.Usernames {
 		currUserCollection := MongoClient.Database("users").Collection(username)
 		var currUserStocks Positions
+
+		// get position documents, month summary
 		currentMonth := time.Now().Month()
 		curUserFilter := bson.M{"ticker": "positions"}
 		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
@@ -151,6 +179,8 @@ func CalculateDividends() {
 		if err != nil {
 			log.Println("func CalculateDividends: ", err)
 		}
+
+		// add dividend paid, tax to positions and month summary
 		for i, position := range currUserStocks.Stocks {
 			if (position.Ticker != "DELETED_SUM") && (position.DivPaid == 0) && (position.NextPayment <= int(time.Now().Unix())) {
 
@@ -166,14 +196,14 @@ func CalculateDividends() {
 			}
 		}
 
-		// Update the stocks array in the document
+		// update the stocks array in the document
 		update := bson.M{"$set": bson.M{"stocks": currUserStocks.Stocks}}
 		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
 		if err != nil {
 			log.Println("func CalculateDividends: ", err)
 		}
 
-		// Update the MONTH_SUMARY document with modified months
+		// update the MONTH_SUMARY document with modified months
 		update = bson.M{"$set": months}
 		_, err = currUserCollection.UpdateOne(context.TODO(), bson.M{"ticker": "MONTH_SUMARY"}, update)
 		if err != nil {
@@ -183,13 +213,14 @@ func CalculateDividends() {
 	}
 }
 
+// get usd/pln pair data from polygon
 func GetForex() float64 {
+	// load polygon api key, send request
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("No .env file found")
 	}
 	apiKey := os.Getenv("POLYGON_API")
 	url := fmt.Sprintf("https://api.polygon.io/v2/aggs/ticker/%s/prev?adjusted=true&apiKey=%s", "C:USDPLN", apiKey)
-
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("func GetForex: ", err)
@@ -205,11 +236,14 @@ func GetForex() float64 {
 		log.Println("func GetForex: ", err)
 	}
 	log.Println(response)
+
+	// get exchange rate
 	exRate := response.Results[0].C
 
 	return exRate
 }
 
+// returns absolute value of a number
 func Abs(x int) int {
 	if x < 0 {
 		return -x
@@ -217,13 +251,14 @@ func Abs(x int) int {
 	return x
 }
 
+// updates the summary documents
 func UpdateSummary(username string) {
+	// init variables and connection to mongodb
 	collection := MongoClient.Database("users").Collection(username)
 	yearFilter := bson.M{"ticker": "YEAR_SUMMARY", "year": time.Now().Year()}
 	positionFilter := bson.M{"ticker": "positions"}
 	var summary initYearSummary
 	var positions Positions
-
 	err := collection.FindOne(context.TODO(), yearFilter).Decode(&summary)
 	if err != nil {
 		log.Println("func UpdateSummary: ", err)
@@ -233,6 +268,7 @@ func UpdateSummary(username string) {
 		log.Println("func UpdateSummary: ", err)
 	}
 
+	// variables used to add all values of DivPLN and DivYTD
 	divYtd := 0.0
 	divPln := 0.0
 
@@ -241,10 +277,9 @@ func UpdateSummary(username string) {
 		divYtd += position.DivYTD
 	}
 
-	// Update the summary struct with divPln and divYtd values
+	// update the summary struct with divPln and divYtd values
 	summary.DividendTax = divPln
 	summary.DividendsYTD = divYtd
-
 	update := bson.M{"$set": summary}
 	_, err = collection.UpdateOne(context.TODO(), yearFilter, update)
 	if err != nil {
