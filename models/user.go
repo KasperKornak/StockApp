@@ -15,16 +15,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// handle various cases of errors during login/registering
 var (
 	ErrUserNotFound  = errors.New("user not found")
 	ErrInvalidLogin  = errors.New("invalid login")
 	ErrUsernameTaken = errors.New("username taken")
 )
 
+// to id the user in redis
 type User struct {
 	Id int64
 }
 
+// used to create initial year summary document
 type initYearSummary struct {
 	Year         int     `bson:"year"`
 	DividendsYTD float64 `bson:"dividendytd"`
@@ -32,6 +35,8 @@ type initYearSummary struct {
 	Ticker       string  `bson:"ticker"`
 }
 
+// no idea what it does
+// TODO: check if necessary
 type MonthData struct {
 	Jan float64 `json:"Jan"`
 	Feb float64 `json:"Feb"`
@@ -47,17 +52,20 @@ type MonthData struct {
 	Dec float64 `json:"Dec"`
 }
 
+// used to create initial month data document
 type InitMonthData struct {
 	Name  string  `bson:"name"`
 	Value float64 `bson:"value"`
 }
 
+// used to create initial month data document
 type InitMongoMonths struct {
 	Year   int             `bson:"year"`
 	Ticker string          `bson:"ticker"`
 	Months []InitMonthData `bson:"months"`
 }
 
+// struct which stores all info about position in user's collection
 type PositionData struct {
 	Ticker           string  `json:"ticker" bson:"ticker"`
 	Shares           int     `json:"shares" bson:"shares"`
@@ -73,12 +81,15 @@ type PositionData struct {
 	ExDivDate        int     `json:"exdivdate" bson:"exdivdate"`
 }
 
+// to aggregate PositionData struct
 type Positions struct {
 	Ticker string         `json:"ticker" bson:"ticker"`
 	Stocks []PositionData `json:"stocks" bson:"stocks"`
 }
 
+// used to create a new user record in redis
 func NewUser(username string, hash []byte) (*User, error) {
+	// check if username is available
 	exists, _ := client.HExists("user:by-username", username).Result()
 	if exists {
 		return nil, ErrUsernameTaken
@@ -87,6 +98,8 @@ func NewUser(username string, hash []byte) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// insert a new user into redis
 	key := fmt.Sprintf("user:%d", id)
 	pipe := client.Pipeline()
 	pipe.HSet(key, "id", id)
@@ -100,20 +113,24 @@ func NewUser(username string, hash []byte) (*User, error) {
 	return &User{id}, nil
 }
 
+// returns the id of user
 func (user *User) GetId() (int64, error) {
 	return user.Id, nil
 }
 
+// returns username based on the id of the user
 func (user *User) GetUsername() (string, error) {
 	key := fmt.Sprintf("user:%d", user.Id)
 	return client.HGet(key, "username").Result()
 }
 
+// returns hash of the user
 func (user *User) GetHash() ([]byte, error) {
 	key := fmt.Sprintf("user:%d", user.Id)
 	return client.HGet(key, "hash").Bytes()
 }
 
+// compares provided password with hash and authenticates
 func (user *User) Authenticate(password string) error {
 	hash, err := user.GetHash()
 	if err != nil {
@@ -126,10 +143,12 @@ func (user *User) Authenticate(password string) error {
 	return err
 }
 
+// literally what it says
 func GetUserById(id int64) (*User, error) {
 	return &User{id}, nil
 }
 
+// literally what it says
 func GetUserByUsername(username string) (*User, error) {
 	id, err := client.HGet("user:by-username", username).Int64()
 	if err == redis.Nil {
@@ -140,6 +159,7 @@ func GetUserByUsername(username string) (*User, error) {
 	return GetUserById(id)
 }
 
+// authenticate the user
 func AuthenticateUser(username, password string) (*User, error) {
 	user, err := GetUserByUsername(username)
 	if err != nil {
@@ -148,15 +168,20 @@ func AuthenticateUser(username, password string) (*User, error) {
 	return user, user.Authenticate(password)
 }
 
+// generates password hash, inserts initial crucial documents into user's collection in mongodb
 func RegisterUser(username, password string) error {
 	cost := bcrypt.DefaultCost
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
 		return err
 	}
+	// make place for new user in redis
 	_, err = NewUser(username, hash)
 
+	// create a new collection for user
 	collection := MongoClient.Database("users").Collection(username)
+
+	// create documents and insert them into collection
 	yearSummary := &initYearSummary{
 		Year:         time.Now().Year(),
 		DividendsYTD: 0.0,
@@ -166,7 +191,6 @@ func RegisterUser(username, password string) error {
 
 	collection.InsertOne(context.TODO(), yearSummary)
 
-	// Create the document
 	months := []InitMonthData{
 		{Name: "Jan", Value: 0.0},
 		{Name: "Feb", Value: 0.0},
@@ -206,12 +230,13 @@ func RegisterUser(username, password string) error {
 	}
 	collection.InsertOne(context.TODO(), stockDoc)
 
+	// add username to username list
 	utils := MongoClient.Database("users").Collection("stockUtils")
 	userListFilter := bson.M{"ticker": "ALL_USERNAMES"}
 	var userList UsernamesDocument
 	_ = utils.FindOne(context.TODO(), userListFilter).Decode(&userList)
 	if err != nil {
-		log.Println(err)
+		log.Println("func RegisterUser: ", err)
 	}
 
 	userList.Usernames = append(userList.Usernames, username)
@@ -221,6 +246,8 @@ func RegisterUser(username, password string) error {
 	return err
 }
 
+// no idea what it does
+// TODO: check if necessary
 func GetName(r *http.Request) int64 {
 	session, _ := sessions.Store.Get(r, "session")
 	untypedUserId := session.Values["user_id"]
@@ -228,15 +255,17 @@ func GetName(r *http.Request) int64 {
 	return userId
 }
 
+// after deleting a position transfer YTD dividend data to DELETED_SUM document
 func TransferDivs(username string, ticker string) {
+	// init variables and open connection to mongodb
 	stocks := MongoClient.Database("users").Collection(username)
-
 	deletedStocks := ModelGetStockByTicker("DELETED_SUM", username)
 
 	toDelete := ModelGetStockByTicker(ticker, username)
 	deletedStocks.DivYTD = deletedStocks.DivYTD + toDelete.DivYTD
 	deletedStocks.DivPLN = deletedStocks.DivPLN + toDelete.DivPLN
 
+	// set update
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "stocks.$[elem].divytd", Value: deletedStocks.DivYTD},
@@ -250,15 +279,18 @@ func TransferDivs(username string, ticker string) {
 		},
 	}
 
+	// apply the update
 	updateOptions := options.Update().SetArrayFilters(arrayFilters)
 	filter := bson.M{"stocks": bson.M{"$elemMatch": bson.M{"ticker": ticker}}, "ticker": "positions"}
 	_, err := stocks.UpdateOne(context.TODO(), filter, update, updateOptions)
 	if err != nil {
-		log.Println("Error updating document:", err)
+		log.Println("func RegisterUser:; Error updating document:", err)
 	}
 }
 
+// returns position data of given user, provided ticker and username
 func ModelGetStockByTicker(ticker string, username string) PositionData {
+	// open connection to mongodb and init some variables
 	stocks := MongoClient.Database("users").Collection(username)
 	var stockData struct {
 		Stocks []PositionData `bson:"stocks"`
@@ -267,13 +299,13 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 	filter := bson.M{"ticker": "positions", "stocks.ticker": ticker}
 	err := stocks.FindOne(context.TODO(), filter).Decode(&stockData)
 	if err != nil {
-		log.Println(err)
+		log.Println("func ModelGetStockByTicker", err)
 		return PositionData{}
 	}
 
+	// iterate over retrieved stocks, if ticker checks out - return the position data
 	for _, stock := range stockData.Stocks {
 		if stock.Ticker == ticker {
-			log.Println(stock)
 			return stock
 		}
 	}
@@ -281,39 +313,30 @@ func ModelGetStockByTicker(ticker string, username string) PositionData {
 	return PositionData{}
 }
 
+// used to handle request to edit positions
 func EditPosition(edit PositionData, username string) PositionData {
+	// get the current state of user's position data
 	currState := ModelGetStockByTicker(edit.Ticker, username)
+
+	// init PositionData variable and check which fields user has changed
 	finalVersion := PositionData{}
 	finalVersion.Ticker = edit.Ticker
 
+	// if user want to edit DELETED_SUM document, it is only possible to edit its divpln and divytd fields
 	if edit.Ticker == "DELETED_SUM" {
 		finalVersion.DivPLN = edit.DivPLN
 		finalVersion.DivYTD = edit.DivYTD
 	} else {
-		if edit.Currency != "" {
-			finalVersion.Currency = edit.Currency
-		} else {
-			finalVersion.Currency = currState.Currency
-		}
-
 		if edit.Shares != 0 {
 			finalVersion.Shares = edit.Shares
 		} else {
 			finalVersion.Shares = currState.Shares
 		}
-
 		if edit.Domestictax != 0 {
 			finalVersion.Domestictax = edit.Domestictax
 		} else {
 			finalVersion.Domestictax = currState.Domestictax
 		}
-
-		if edit.DivQuarterlyRate != 0 {
-			finalVersion.DivQuarterlyRate = edit.DivQuarterlyRate
-		} else {
-			finalVersion.DivQuarterlyRate = currState.DivQuarterlyRate
-		}
-
 		if edit.DivYTD != 0 {
 			finalVersion.DivYTD = edit.DivYTD
 		} else {
@@ -325,20 +348,13 @@ func EditPosition(edit PositionData, username string) PositionData {
 		} else {
 			finalVersion.DivPLN = currState.DivPLN
 		}
-
-		if edit.NextPayment != 0 {
-			finalVersion.NextPayment = edit.NextPayment
-		} else {
-			finalVersion.NextPayment = currState.NextPayment
-		}
-
-		if edit.PrevPayment != 0 {
-			finalVersion.PrevPayment = edit.PrevPayment
-		} else {
-			finalVersion.PrevPayment = currState.PrevPayment
-		}
+		edit.DivPaid = currState.DivPaid
+		edit.Currency = currState.Currency
+		edit.DivQuarterlyRate = currState.DivQuarterlyRate
+		edit.NextPayment = currState.NextPayment
+		edit.PrevPayment = currState.PrevPayment
+		edit.SharesAtExDiv = currState.SharesAtExDiv
+		edit.ExDivDate = currState.ExDivDate
 	}
-
-	log.Println(finalVersion)
 	return finalVersion
 }
