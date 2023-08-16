@@ -348,13 +348,13 @@ func EditPosition(edit PositionData, username string) PositionData {
 		} else {
 			finalVersion.DivPLN = currState.DivPLN
 		}
-		edit.DivPaid = currState.DivPaid
-		edit.Currency = currState.Currency
-		edit.DivQuarterlyRate = currState.DivQuarterlyRate
-		edit.NextPayment = currState.NextPayment
-		edit.PrevPayment = currState.PrevPayment
-		edit.SharesAtExDiv = currState.SharesAtExDiv
-		edit.ExDivDate = currState.ExDivDate
+		finalVersion.DivPaid = currState.DivPaid
+		finalVersion.Currency = currState.Currency
+		finalVersion.DivQuarterlyRate = currState.DivQuarterlyRate
+		finalVersion.NextPayment = currState.NextPayment
+		finalVersion.PrevPayment = currState.PrevPayment
+		finalVersion.SharesAtExDiv = currState.SharesAtExDiv
+		finalVersion.ExDivDate = currState.ExDivDate
 	}
 	return finalVersion
 }
