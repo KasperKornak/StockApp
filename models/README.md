@@ -60,6 +60,7 @@ Important package of app with the biggest impact on the whole project. Connectio
 |**TransferDivs**|After deleting a position, transfer YTD dividend data to DELETED_SUM document.|
 |**ModelGetStockByTicker**|Returns position data of given user, provided ticker and username.|
 |**EditPosition**|Used to handle request to edit positions.|
+|**UpdateExDivDate**|‼️ Ad hoc fix to `divPaid` variable calculation. Check if works. ‼️|
 
 ### structs
 |Struct|Description|
