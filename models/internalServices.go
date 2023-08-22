@@ -62,7 +62,6 @@ func UpdateUserList() {
 					if position.NextPayment != availableStock.NextPayment {
 						position.NextPayment = availableStock.NextPayment
 						position.PrevPayment = availableStock.PrevPayment
-						position.DivPaid = availableStock.DivPaid
 						position.ExDivDate = availableStock.ExDividend
 					}
 					// additionally set SharesAtExDiv if they are close to ex-dividend date
