@@ -358,3 +358,41 @@ func EditPosition(edit PositionData, username string) PositionData {
 	}
 	return finalVersion
 }
+
+func UpdateExDivDate() {
+	// init variables, retrieve username list and all tracked stocks
+	currUserList := RetrieveUsers()
+	currentTime := int(time.Now().Unix())
+
+	// iterate over username list, connect to their collection
+	for _, username := range currUserList.Usernames {
+		currUserCollection := MongoClient.Database("users").Collection(username)
+		var currUserStocks Positions
+		curUserFilter := bson.M{"ticker": "positions"}
+		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		if err != nil {
+			log.Println("func UpdateExDivDate:", err)
+		}
+
+		// iterate over positions of user and check if dividend has been payed out
+		for _, position := range currUserStocks.Stocks {
+			if position.NextPayment <= currentTime {
+				position.DivPaid = 1
+				// to delete in near future
+				log.Println("func UpdateExDivDate: updated divPaid for user: ", username, "\nposition: ", position.Ticker)
+			} else {
+				position.DivPaid = 0
+			}
+		}
+		// update user's positions
+		update := bson.M{
+			"$set": bson.M{
+				"stocks": currUserStocks.Stocks,
+			},
+		}
+		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
+		if err != nil {
+			log.Println("func UpdateExDivDate: ", err)
+		}
+	}
+}

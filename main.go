@@ -19,7 +19,7 @@ func main() {
 
 	// cronjob which updates dbs
 	c := cron.New()
-	c.AddFunc("18 23 * * *", func() {
+	c.AddFunc("18 22 * * *", func() {
 		log.Println("started")
 		models.CalculateDividends()
 		log.Println("calculating divs finished")
@@ -27,6 +27,8 @@ func main() {
 		log.Println("updating stock db finished")
 		models.UpdateUserList()
 		log.Println("updating user list finished")
+		models.UpdateExDivDate()
+		log.Println("ad hoc fix of divPaid variable fixed")
 		log.Println("ended")
 	})
 	c.Start()
