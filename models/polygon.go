@@ -263,7 +263,7 @@ func PolygonTickerUpdate(ticker string) (nextpayment int, exdivdate int, cashamo
 		log.Println("func PolygonTickerUpdate: ", err)
 	}
 	convertedExDivDate := int(t.Unix())
-
+	log.Println("ticker: ", ticker, "nextPayment: ", convertedNextPayment, "; exDivDate: ", convertedExDivDate)
 	// return next payment and ex-dividend date and cash amount
 	return convertedNextPayment, convertedExDivDate, response.Results[0].CashAmount
 }

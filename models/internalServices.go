@@ -63,6 +63,9 @@ func UpdateUserList() {
 						position.NextPayment = availableStock.NextPayment
 						position.PrevPayment = availableStock.PrevPayment
 						position.ExDivDate = availableStock.ExDividend
+						log.Println("Updated position for: ", username, " stock updated: ", position.Ticker)
+					} else {
+						log.Println("Didn't update position for: ", username, " stock updated: ", position.Ticker)
 					}
 					// additionally set SharesAtExDiv if they are close to ex-dividend date
 					if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
@@ -70,7 +73,6 @@ func UpdateUserList() {
 					} else {
 						position.SharesAtExDiv = position.SharesAtExDiv
 					}
-
 				}
 			}
 		}
