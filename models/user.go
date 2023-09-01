@@ -359,6 +359,7 @@ func EditPosition(edit PositionData, username string) PositionData {
 	return finalVersion
 }
 
+// used to update divpaid field
 func UpdateExDivDate() {
 	// init variables, retrieve username list and all tracked stocks
 	currUserList := RetrieveUsers()
@@ -393,6 +394,41 @@ func UpdateExDivDate() {
 		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
 		if err != nil {
 			log.Println("func UpdateExDivDate: ", err)
+		}
+	}
+}
+
+// used to check shares at exdiv
+func CheckSharesAtExdiv() {
+	// init variables, retrieve username list and all tracked stocks
+	currUserList := RetrieveUsers()
+	currentTime := int(time.Now().Unix())
+
+	// iterate over username list, connect to their collection
+	for _, username := range currUserList.Usernames {
+		currUserCollection := MongoClient.Database("users").Collection(username)
+		var currUserStocks Positions
+		curUserFilter := bson.M{"ticker": "positions"}
+		err := currUserCollection.FindOne(context.TODO(), curUserFilter).Decode(&currUserStocks)
+		if err != nil {
+			log.Println("func CheckSharesAtExdiv:", err)
+		}
+
+		// iterate over positions of user and check if dividend has been payed out
+		for _, position := range currUserStocks.Stocks {
+			if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
+				position.SharesAtExDiv = position.Shares
+			}
+		}
+		// update user's positions
+		update := bson.M{
+			"$set": bson.M{
+				"stocks": currUserStocks.Stocks,
+			},
+		}
+		_, err = currUserCollection.UpdateOne(context.TODO(), curUserFilter, update)
+		if err != nil {
+			log.Println("func CheckSharesAtExdiv: ", err)
 		}
 	}
 }

@@ -61,6 +61,7 @@ Important package of app with the biggest impact on the whole project. Connectio
 |**ModelGetStockByTicker**|Returns position data of given user, provided ticker and username.|
 |**EditPosition**|Used to handle request to edit positions.|
 |**UpdateExDivDate**|‼️ Ad hoc fix to `divPaid` variable calculation. Check if works. ‼️|
+|**CheckSharesAtExdiv**|‼️ Ad hoc fix to calculating shares at exdiv fields in MongoDB. ‼️|
 
 ### structs
 |Struct|Description|

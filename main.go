@@ -28,6 +28,7 @@ func main() {
 		models.UpdateUserList()
 		log.Println("updating user list finished")
 		models.UpdateExDivDate()
+		models.CheckSharesAtExdiv()
 		log.Println("ad hoc fix of divPaid variable fixed")
 		log.Println("ended")
 	})

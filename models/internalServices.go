@@ -40,7 +40,6 @@ func RetrieveUsers() UsernamesDocument {
 func UpdateUserList() {
 	// init variables, retrieve username list and all tracked stocks
 	currUserList := RetrieveUsers()
-	currentTime := int(time.Now().Unix())
 	currAvailableStocks := RetrieveAvailableStocks()
 
 	// iterate over username list, connect to their collection
@@ -66,12 +65,6 @@ func UpdateUserList() {
 						log.Println("Updated position for: ", username, " stock updated: ", position.Ticker)
 					} else {
 						log.Println("Didn't update position for: ", username, " stock updated: ", position.Ticker)
-					}
-					// additionally set SharesAtExDiv if they are close to ex-dividend date
-					if Abs(position.ExDivDate-currentTime) <= 48*60*60 {
-						position.SharesAtExDiv = position.Shares
-					} else {
-						position.SharesAtExDiv = position.SharesAtExDiv
 					}
 				}
 			}
